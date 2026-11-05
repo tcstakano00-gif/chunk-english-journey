@@ -1,0 +1,120 @@
+{
+  "total": 20,
+  "passed": 20,
+  "tests": [
+    [
+      "initial homepage",
+      "PASS"
+    ],
+    [
+      "all three modes render",
+      "PASS"
+    ],
+    [
+      "question and reply buttons separate",
+      "PASS"
+    ],
+    [
+      "speech score and back chunk",
+      "PASS"
+    ],
+    [
+      "speech score and back exampleQuestion",
+      "PASS"
+    ],
+    [
+      "speech score and back example",
+      "PASS"
+    ],
+    [
+      "speech score and back question",
+      "PASS"
+    ],
+    [
+      "speech score and back reply",
+      "PASS"
+    ],
+    [
+      "network error recovery chunk",
+      "PASS"
+    ],
+    [
+      "network error recovery exampleQuestion",
+      "PASS"
+    ],
+    [
+      "network error recovery example",
+      "PASS"
+    ],
+    [
+      "network error recovery question",
+      "PASS"
+    ],
+    [
+      "network error recovery reply",
+      "PASS"
+    ],
+    [
+      "manual microphone cancel",
+      "PASS"
+    ],
+    [
+      "single mic activity",
+      "PASS"
+    ],
+    [
+      "speech diagnostic metadata contains no transcript",
+      "PASS"
+    ],
+    [
+      "warning expires and button returns idle",
+      "PASS"
+    ],
+    [
+      "settings persist across screen transitions",
+      "PASS"
+    ],
+    [
+      "layout inspected",
+      "PASS"
+    ],
+    [
+      "no uncaught browser errors",
+      "PASS"
+    ]
+  ],
+  "layout": {
+    "pager": {
+      "x": 10,
+      "y": 694,
+      "width": 370,
+      "height": 42,
+      "top": 694,
+      "right": 380,
+      "bottom": 736,
+      "left": 10
+    },
+    "mode": {
+      "x": 0,
+      "y": 738,
+      "width": 390,
+      "height": 48,
+      "top": 738,
+      "right": 390,
+      "bottom": 786,
+      "left": 0
+    },
+    "footer": {
+      "x": 0,
+      "y": 786,
+      "width": 390,
+      "height": 58,
+      "top": 786,
+      "right": 390,
+      "bottom": 844,
+      "left": 0
+    },
+    "screen": 844
+  },
+  "browserErrors": []
+}

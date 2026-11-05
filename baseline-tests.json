@@ -1,0 +1,40 @@
+{
+  "tests": 29,
+  "passed": [
+    "result chunk",
+    "result exampleQuestion",
+    "result example",
+    "result registeredExample",
+    "result question",
+    "result aiReply",
+    "result reply",
+    "result scene",
+    "page home",
+    "page pron",
+    "page example",
+    "page conversation",
+    "page list",
+    "page history",
+    "page settings",
+    "speech success chunk",
+    "manual cancel chunk",
+    "speech success exampleQuestion",
+    "manual cancel exampleQuestion",
+    "speech success example",
+    "manual cancel example",
+    "speech success question",
+    "manual cancel question",
+    "speech success aiReply",
+    "manual cancel aiReply",
+    "compact fixed navigation layout",
+    "licensed slots are local-only",
+    "all 15 avatar choices",
+    "official images missing cannot be selected"
+  ],
+  "failed": 0
+}
+v4.0.13 additional tests complete
+v4.0.15 total passed: 39 failed: 0
+v4.0.20 additional tests done
+v4.0.20 tests executed; failed: 0
+v4.0.20 translation regression tests: 56 errors: 0
