@@ -1,0 +1,106 @@
+{
+  "passed": 20,
+  "total": 20,
+  "results": [
+    {
+      "check": "390 no horizontal overflow",
+      "pass": true,
+      "detail": "{'screen': 390, 'scroll': 390, 'summary': [{'x': 11, 'y': 37, 'w': 368, 'h': 157, 'right': 379, 'bottom': 194}], 'focus': [{'x': 11, 'y': 202, 'w': 368, 'h': 301.28125, 'right': 37"
+    },
+    {
+      "check": "390 focus panel compact",
+      "pass": true,
+      "detail": "[{'x': 11, 'y': 202, 'w': 368, 'h': 301.28125, 'right': 379, 'bottom': 503.28125}]"
+    },
+    {
+      "check": "390 task row compact",
+      "pass": true,
+      "detail": "[{'x': 23, 'y': 296.28125, 'w': 344, 'h': 62, 'right': 367, 'bottom': 358.28125}, {'x': 23, 'y': 363.28125, 'w': 344, 'h': 62, 'right': 367, 'bottom': 425.28125}, {'x': 23, 'y': 43"
+    },
+    {
+      "check": "390 visible buttons touch height",
+      "pass": true,
+      "detail": "[{'x': 227.40625, 'y': 305.28125, 'w': 129.59375, 'h': 44, 'right': 357, 'bottom': 349.28125}, {'x': 227.40625, 'y': 372.28125, 'w': 129.59375, 'h': 44, 'right': 357, 'bottom': 416"
+    },
+    {
+      "check": "390 task buttons do not overlap",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "390 quest stages in DOM",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "pixel snapshot journey-390",
+      "pass": true,
+      "detail": "changed pixels=0.00%, allowed=2.5%"
+    },
+    {
+      "check": "pixel snapshot settings-390",
+      "pass": true,
+      "detail": "changed pixels=0.00%, allowed=2.5%"
+    },
+    {
+      "check": "pixel snapshot example-390",
+      "pass": true,
+      "detail": "changed pixels=0.00%, allowed=2.5%"
+    },
+    {
+      "check": "390 no page errors",
+      "pass": true,
+      "detail": "[]"
+    },
+    {
+      "check": "375 no horizontal overflow",
+      "pass": true,
+      "detail": "{'screen': 375, 'scroll': 375, 'summary': [{'x': 11, 'y': 37, 'w': 353, 'h': 157, 'right': 364, 'bottom': 194}], 'focus': [{'x': 11, 'y': 202, 'w': 353, 'h': 301.28125, 'right': 36"
+    },
+    {
+      "check": "375 focus panel compact",
+      "pass": true,
+      "detail": "[{'x': 11, 'y': 202, 'w': 353, 'h': 301.28125, 'right': 364, 'bottom': 503.28125}]"
+    },
+    {
+      "check": "375 task row compact",
+      "pass": true,
+      "detail": "[{'x': 23, 'y': 296.28125, 'w': 329, 'h': 62, 'right': 352, 'bottom': 358.28125}, {'x': 23, 'y': 363.28125, 'w': 329, 'h': 62, 'right': 352, 'bottom': 425.28125}, {'x': 23, 'y': 43"
+    },
+    {
+      "check": "375 visible buttons touch height",
+      "pass": true,
+      "detail": "[{'x': 218.40625, 'y': 305.28125, 'w': 123.59375, 'h': 44, 'right': 342, 'bottom': 349.28125}, {'x': 218.40625, 'y': 372.28125, 'w': 123.59375, 'h': 44, 'right': 342, 'bottom': 416"
+    },
+    {
+      "check": "375 task buttons do not overlap",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "375 quest stages in DOM",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "pixel snapshot journey-375",
+      "pass": true,
+      "detail": "changed pixels=0.00%, allowed=2.5%"
+    },
+    {
+      "check": "pixel snapshot settings-375",
+      "pass": true,
+      "detail": "changed pixels=0.00%, allowed=2.5%"
+    },
+    {
+      "check": "pixel snapshot example-375",
+      "pass": true,
+      "detail": "changed pixels=0.00%, allowed=2.5%"
+    },
+    {
+      "check": "375 no page errors",
+      "pass": true,
+      "detail": "[]"
+    }
+  ]
+}

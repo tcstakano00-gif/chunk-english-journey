@@ -102,8 +102,8 @@ persist=function(){
  return basePersist();
 };
 function injectStyles(){
- if(document.getElementById('journey-style-v431'))return;
- const style=document.createElement('style');style.id='journey-style-v431';
+ if(document.getElementById('journey-style-v434'))return;
+ const style=document.createElement('style');style.id='journey-style-v434';
  style.textContent=`
  .journey-home,.journey-summary,.journey-stage,.journey-focus,.journey-missions{overflow:hidden;position:relative}
  .journey-home{margin:12px 0;background:linear-gradient(135deg,#15365a 0%,#255faa 45%,#67c4ff 100%);color:#fff;border:0;box-shadow:0 10px 26px #0f2d4d33}
@@ -162,6 +162,54 @@ function injectStyles(){
  .journey-reward{animation:journeyCelebrate .7s ease-out both}
  @keyframes journeyCelebrate{0%{transform:scale(.88);opacity:.2}50%{transform:scale(1.04);opacity:1}100%{transform:scale(1);opacity:1}}
  @media(prefers-reduced-motion:reduce){.journey-reward{animation:none}}
+
+ /* v4.0.34 game compact layout and quest medals */
+ .journey-world{gap:7px;padding-bottom:65px}
+ .journey-world>.card{margin-bottom:1px;padding:10px 11px}
+ .journey-summary .journey-title{font-size:17px;color:#fff}.journey-summary .journey-title span{color:#fff}
+ .journey-summary>p.tiny:first-of-type{display:none}
+ .journey-summary .journey-chip{padding:4px 8px;font-size:11px}
+ .journey-summary .journey-stats{gap:5px;margin:7px 0}
+ .journey-summary .journey-bar{height:7px;margin:6px 0}
+ .journey-summary>p.tiny:last-child{font-size:10px;line-height:1.35;margin:2px 0}
+ .journey-focus .journey-stage-name{font-size:18px}
+ .journey-focus .journey-stage-hero{margin-bottom:3px}
+ .journey-focus .journey-focus-badge{font-size:27px}
+ .journey-focus>.tiny{font-size:11px;line-height:1.35;margin:3px 0}
+ .journey-task-grid{gap:5px;margin-top:7px}
+ .journey-task{padding:8px 9px;display:grid;grid-template-columns:minmax(0,1fr) minmax(112px,40%);column-gap:8px;align-items:center;border-radius:10px}
+ .journey-task-head{display:flex;align-items:center;gap:5px;min-width:0;flex-wrap:wrap}
+ .journey-task-head strong{font-size:13px;display:flex;gap:4px;align-items:center}
+ .journey-task-score{font-size:11px;padding:3px 7px}
+ .journey-task p{display:none}
+ .journey-task>.btn{grid-column:2;grid-row:1;min-height:44px;padding:7px 4px;font-size:12px;margin:0}
+ .journey-task>.tiny{grid-column:2;grid-row:1}
+ .quest-medal{display:inline-grid;place-items:center;font-size:17px;filter:drop-shadow(0 1px 2px #bf7d1269)}
+ .journey-fold-hint{display:block;color:#61798d;font-size:11px;font-weight:500;margin-top:2px}
+ .journey-stage-list{padding:10px 11px}
+ .journey-world-fold{margin-top:6px;border:1px solid #d5e2ee;border-radius:12px;overflow:hidden}
+ .journey-world-fold>summary{cursor:pointer;list-style:none;border-radius:0!important;padding:9px 11px;font-size:14px;min-height:44px;display:flex;align-items:center;justify-content:space-between}
+ .journey-world-fold>summary::-webkit-details-marker{display:none}
+ .journey-world-fold>summary:after{content:'▾';font-size:16px;opacity:.85;margin-left:8px}
+ .journey-world-fold:not([open])>summary:after{content:'▸'}
+ .journey-world-fold .journey-stage{margin:6px 7px;padding:8px 9px;border-radius:10px}
+ .journey-stage-heading strong{font-size:13px}
+ .journey-stage-heading span{font-size:10px;padding:3px 6px}
+ .journey-stage p{font-size:11px;margin:3px 0;line-height:1.35}
+ .journey-stage.locked p{display:none}
+ .journey-miniquests{gap:4px;margin-top:5px}
+ .journey-miniquest{padding:5px 4px;font-size:10px;border-radius:8px}
+ .journey-miniquest.done{background:linear-gradient(115deg,#fff6ce,#fbe3a0);border-color:#e7b65d;color:#744a00}
+ .journey-miniquest.done:before{content:'🏅 ';font-size:11px}
+ .journey-miniquest small{font-size:10px;margin-top:1px}
+ .journey-stage-actions{margin-top:6px}
+ .journey-stage-actions .btn{min-height:44px;font-size:12px}
+ .journey-treasure{padding:7px;margin:5px 0;gap:6px;border-radius:9px}
+ .journey-treasure-icon{font-size:21px}
+ .journey-treasure button{min-width:88px;min-height:44px;font-size:12px}
+ .journey-mission{padding:8px 0}
+ @media(max-width:360px){.journey-task{grid-template-columns:minmax(0,1fr) 118px}.journey-miniquests{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
  @media(max-width:360px){.journey-miniquests{grid-template-columns:1fr}.journey-stage-actions{display:grid}.journey-stage-actions .btn{flex:auto}}
  `;
  document.head.appendChild(style);
@@ -182,7 +230,7 @@ function homePanel(){
 }
 function stageCard(i){
  const s=STAGES[i], done=data.completed.includes(i), locked=i>data.completed.length, active=i===data.active||(data.completed.length===i&&stageUnlocked(i));
- return `<div class="journey-stage ${done?'done':''} ${locked?'locked':''}"><div class="journey-stage-heading"><strong>${done?'✓':locked?'🔒':s.badge} ステージ${i<5?i+1:i-4}　${esc(s.name)}</strong><span>${stageStatusLabel(i)}</span></div><p>${esc(s.story)}</p><div class="journey-miniquests">${TASK_KEYS.map(key=>`<div class="journey-miniquest ${questDone(i,key)?'done':''}">${TASK_META[key].label}<small>${Math.min(progressFor(i)[key],100)} / ${questMin(i,key)}%</small></div>`).join('')}</div>${done?treasurePanel(i):''}${!locked?`<div class="journey-stage-actions"><button class="btn ${active?'gray':'outline'}" onclick="journeyOpen(${i})">${active?'表示中':'このステージを見る'}</button>${!done?`<button class="btn ${questButtonClass('pron')}" onclick="journeyPlay(${i},'pron')">発音へ</button>`:''}</div>`:''}</div>`;
+ return `<div class="journey-stage ${done?'done':''} ${locked?'locked':''}"><div class="journey-stage-heading"><strong>${done?'🏆':locked?'🔒':s.badge} ステージ${i<5?i+1:i-4}　${esc(s.name)}</strong><span>${stageStatusLabel(i)}</span></div><p>${esc(s.story)}</p><div class="journey-miniquests">${TASK_KEYS.map(key=>`<div class="journey-miniquest ${questDone(i,key)?'done':''}">${TASK_META[key].label}<small>${Math.min(progressFor(i)[key],100)} / ${questMin(i,key)}%</small></div>`).join('')}</div>${done?treasurePanel(i):''}${!locked&&!active?`<div class="journey-stage-actions"><button class="btn outline" onclick="journeyOpen(${i})">このステージを表示</button></div>`:''}</div>`;
 }
 function titleName(){
  const n=data.completed.length;
@@ -205,12 +253,12 @@ function focusPanel(){
  const i=Math.min(data.active,STAGES.length-1), s=STAGES[i], done=data.completed.includes(i), locked=i>data.completed.length;
  if(locked)return '';
  const row=progressFor(i);
- return `<div class="card journey-focus"><div class="journey-stage-hero"><div><div class="journey-stage-name">${esc(s.name)}</div><div class="tiny">${esc(s.story)}</div></div><div class="journey-focus-badge">${s.badge}</div></div><div class="tiny">このステージは <b>発音・例文・AI会話</b> の3課題をすべて達成するとクリアです。課題ごとに目標達成率が異なります。</div><div class="journey-task-grid">${TASK_KEYS.map(key=>{const meta=TASK_META[key], score=Math.min(row[key],100), doneTask=questDone(i,key);return `<div class="journey-task ${doneTask?'done':''}"><div class="journey-task-head"><strong>${doneTask?'✓ ':''}${meta.label}</strong><span class="journey-task-score">${score} / ${questMin(i,key)}%</span></div><p>${meta.reward}</p>${done?`<div class="tiny">この課題は達成済みです。</div>`:`<button class="btn ${questButtonClass(key)} full" onclick="journeyPlay(${i},'${key}')">${doneTask?'もう一度練習':meta.button}</button>`}</div>`}).join('')}</div>${done?`<p class="tiny" style="margin-top:10px">このステージはクリア済みです。復習する場合は各学習モードから練習できます。</p>`:''}</div>`;
+ return `<div class="card journey-focus"><div class="journey-stage-hero"><div><div class="journey-stage-name">${esc(s.name)}</div><div class="tiny">${esc(s.story)}</div></div><div class="journey-focus-badge">${s.badge}</div></div><div class="tiny">このステージは <b>発音・例文・AI会話</b> の3課題をすべて達成するとクリアです。課題ごとに目標達成率が異なります。</div><div class="journey-task-grid">${TASK_KEYS.map(key=>{const meta=TASK_META[key], score=Math.min(row[key],100), doneTask=questDone(i,key);return `<div class="journey-task ${doneTask?'done':''}"><div class="journey-task-head"><strong>${doneTask?'<span class="quest-medal" aria-label="達成">🏅</span> ':''}${meta.label}</strong><span class="journey-task-score">${score} / ${questMin(i,key)}%</span></div><p>${meta.reward}</p>${done?`<div class="tiny">この課題は達成済みです。</div>`:`<button class="btn ${questButtonClass(key)} full" onclick="journeyPlay(${i},'${key}')">${doneTask?'もう一度練習':meta.button}</button>`}</div>`}).join('')}</div>${done?`<p class="tiny" style="margin-top:10px">このステージはクリア済みです。復習する場合は各学習モードから練習できます。</p>`:''}</div>`;
 }
 function journeyPanel(){
  const levelRemain=150-data.xp%150||150;
  const missions=[['今日3回発音・会話を練習',data.attempts,3],['80%以上の採点を1回',data.good,1],['ステージを1つクリア',data.dayStages,1]];
- return `<div class="journey-world"><div class="card journey-summary"><div class="journey-title">🗺️ English Journey <span>2ワールド / 全10ステージ</span></div><p class="tiny">空港と旅先の街を舞台にした10のステージを順番に攻略します。各ステージは、同じチャンクを使って「発音」「例文」「AI会話」の3課題を全部クリアすると達成です。</p><div class="journey-stats"><span class="journey-chip">レベル <b>${level()}</b></span><span class="journey-chip">獲得XP <b>${data.xp}</b></span><span class="journey-chip">称号 <b>${titleName()}</b></span><span class="journey-chip">次のレベルまで <b>${levelRemain}</b> XP</span></div><div class="journey-bar"><span style="width:${(data.xp%150)/150*100}%"></span></div><p class="tiny">ステージ達成 +50 XP ／ 宝箱 +20 XP ／ 採点1回 +10 XP（1日10回まで）／ ミッション達成 +20 XP</p></div>${focusPanel()}<div class="card journey-stage-list"><h2>ステージ一覧</h2><div class="journey-world-banner">✈ ワールド1｜旅立ちの空港</div>${STAGES.slice(0,5).map((s,i)=>stageCard(i)).join('')}<div class="journey-world-banner world2 ${data.completed.length<5?'locked':''}">🌆 ワールド2｜旅先の街 ${data.completed.length<5?'🔒':''}</div>${STAGES.slice(5,10).map((s,i)=>stageCard(i+5)).join('')}<p class="tiny">各ステージは順番に開放されます。目標未満だった課題は何度でも再挑戦できます。</p></div><div class="card journey-missions"><h2>今日のデイリーミッション</h2><p class="tiny">日付が変わると進捗はリセットされます（端末の現地時間）。報酬は条件達成時に自動付与されます。</p>${missions.map(([label,value,goal],i)=>`<div class="journey-mission"><span>${data.claimed.includes(i)?'✓ ':''}${esc(label)}</span><strong>${Math.min(value,goal)}/${goal}${data.claimed.includes(i)?'　+20 XP':''}</strong></div>`).join('')}</div><button class="btn outline full" onclick="go('home')">ホームへ戻る</button></div>`;
+ return `<div class="journey-world"><div class="card journey-summary"><div class="journey-title">🗺️ English Journey <span>2ワールド / 全10ステージ</span></div><p class="tiny">空港と旅先の街を舞台にした10のステージを順番に攻略します。各ステージは、同じチャンクを使って「発音」「例文」「AI会話」の3課題を全部クリアすると達成です。</p><div class="journey-stats"><span class="journey-chip">レベル <b>${level()}</b></span><span class="journey-chip">獲得XP <b>${data.xp}</b></span><span class="journey-chip">称号 <b>${titleName()}</b></span><span class="journey-chip">次のレベルまで <b>${levelRemain}</b> XP</span></div><div class="journey-bar"><span style="width:${(data.xp%150)/150*100}%"></span></div><p class="tiny">ステージ達成 +50 XP ／ 宝箱 +20 XP ／ 採点1回 +10 XP（1日10回まで）／ ミッション達成 +20 XP</p></div>${focusPanel()}<div class="card journey-stage-list"><h2>ステージ一覧 <small class="journey-fold-hint">各ワールドをタップして展開</small></h2><details class="journey-world-fold" ${data.completed.length<5?'open':''}><summary class="journey-world-banner">✈ ワールド1｜旅立ちの空港</summary>${STAGES.slice(0,5).map((s,i)=>stageCard(i)).join('')}</details><details class="journey-world-fold" ${data.completed.length>=5?'open':''}><summary class="journey-world-banner world2 ${data.completed.length<5?'locked':''}">🌆 ワールド2｜旅先の街 ${data.completed.length<5?'🔒':''}</summary>${STAGES.slice(5,10).map((s,i)=>stageCard(i+5)).join('')}</details><p class="tiny">各ステージは順番に開放されます。目標未満だった課題は何度でも再挑戦できます。</p></div><div class="card journey-missions"><h2>今日のデイリーミッション</h2><p class="tiny">日付が変わると進捗はリセットされます（端末の現地時間）。報酬は条件達成時に自動付与されます。</p>${missions.map(([label,value,goal],i)=>`<div class="journey-mission"><span>${data.claimed.includes(i)?'🏅 ':''}${esc(label)}</span><strong>${Math.min(value,goal)}/${goal}${data.claimed.includes(i)?'　+20 XP':''}</strong></div>`).join('')}</div><button class="btn outline full" onclick="go('home')">ホームへ戻る</button></div>`;
 }
 const baseRender=render;
 render=function(){
