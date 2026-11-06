@@ -1,0 +1,78 @@
+{
+  "passed": 18,
+  "total": 18,
+  "checks": [
+    [
+      "375 home compact adventure banner",
+      "PASS"
+    ],
+    [
+      "375 adventure world layout and stage fold",
+      "PASS"
+    ],
+    [
+      "375 learning modes and adventure navigation",
+      "PASS"
+    ],
+    [
+      "375 reward and progression",
+      "PASS"
+    ],
+    [
+      "375 no duplicate progression",
+      "PASS"
+    ],
+    [
+      "375 persistence and progress",
+      "PASS"
+    ],
+    [
+      "375 settings regression",
+      "PASS"
+    ],
+    [
+      "375 no JS errors",
+      "PASS"
+    ],
+    [
+      "375 assets present on disk",
+      "PASS"
+    ],
+    [
+      "390 home compact adventure banner",
+      "PASS"
+    ],
+    [
+      "390 adventure world layout and stage fold",
+      "PASS"
+    ],
+    [
+      "390 learning modes and adventure navigation",
+      "PASS"
+    ],
+    [
+      "390 reward and progression",
+      "PASS"
+    ],
+    [
+      "390 no duplicate progression",
+      "PASS"
+    ],
+    [
+      "390 persistence and progress",
+      "PASS"
+    ],
+    [
+      "390 settings regression",
+      "PASS"
+    ],
+    [
+      "390 no JS errors",
+      "PASS"
+    ],
+    [
+      "390 assets present on disk",
+      "PASS"
+    ]
+  ]
+}
