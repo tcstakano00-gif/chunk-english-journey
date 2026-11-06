@@ -1,306 +1,82 @@
-/* English Journey Worlds 1–2 v4.0.31. Isolated progression module; no microphone/recognition modification. */
 (function(){
 'use strict';
-const KEY='chunkEnglishJourneyV1';
-const DAY=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
-const TASK_META={pron:{label:'発音',mode:'pron',kinds:['chunk'],button:'発音で挑戦',reward:'チャンクをはっきり発音する'},example:{label:'例文',mode:'example',kinds:['example','registeredExample','exampleQuestion'],button:'例文で挑戦',reward:'例文の質問または回答を話す'},conversation:{label:'AI会話',mode:'conversation',kinds:['reply','question','aiReply'],button:'AI会話で挑戦',reward:'会話の質問または返答を話す'}};
-const STAGES=Object.freeze([
- {name:'出発の準備',story:'出発前に、旅の予定をしっかり伝えましょう。',id:97,badge:'🧳',quests:{pron:{min:70},example:{min:65},conversation:{min:60}}},
- {name:'空港でお願い',story:'空港スタッフに、必要なお願いを伝えましょう。',id:41,badge:'🛎️',quests:{pron:{min:72},example:{min:68},conversation:{min:63}}},
- {name:'チェックイン',story:'受付で確認事項を落ち着いて伝えましょう。',id:35,badge:'🧾',quests:{pron:{min:75},example:{min:70},conversation:{min:65}}},
- {name:'搭乗口を確認',story:'案内を聞き返し、搭乗口を確認しましょう。',id:37,badge:'🛫',quests:{pron:{min:78},example:{min:72},conversation:{min:68}}},
- {name:'いざ出発！',story:'旅立ちの一言を自信を持って伝えましょう。',id:61,badge:'🌍',quests:{pron:{min:80},example:{min:75},conversation:{min:70}}},
- {name:'街へ向かう',story:'到着した街で、これからの予定を伝えましょう。',id:71,badge:'🚕',quests:{pron:{min:72},example:{min:68},conversation:{min:62}}},
- {name:'道をたずねる',story:'目的地を探して、現地の人と話しましょう。',id:75,badge:'🗺️',quests:{pron:{min:74},example:{min:70},conversation:{min:64}}},
- {name:'待ち合わせ',story:'待っている相手について確認しましょう。',id:76,badge:'📍',quests:{pron:{min:77},example:{min:72},conversation:{min:68}}},
- {name:'予定の確認',story:'現地で予定を確認し、質問に答えましょう。',id:79,badge:'🗓️',quests:{pron:{min:78},example:{min:74},conversation:{min:70}}},
- {name:'旅先でお礼',story:'助けてくれた人に、感謝を伝えましょう。',id:92,badge:'🏆',quests:{pron:{min:82},example:{min:78},conversation:{min:72}}}
-]);
+const KEY='chunkEnglishJourneyV2';
+const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
+const TASK_META={pron:{label:'発音',mode:'pron',kinds:['chunk'],button:'発音で挑戦',hint:'チャンクをはっきり発音する'},example:{label:'例文',mode:'example',kinds:['example','registeredExample','exampleQuestion'],button:'例文で挑戦',hint:'質問または回答の例文を練習'},conversation:{label:'AI会話',mode:'conversation',kinds:['reply','question','aiReply'],button:'AI会話で挑戦',hint:'会話の質問または返答を話す'}};
+const WORLDS=[
+ {id:1,name:'旅立ちの空港',icon:'✈️',theme:'airport',stages:[
+  {name:'出発の準備',badge:'🧳',id:97,story:'出発前の予定や準備を伝える。',quests:{pron:70,example:65,conversation:60}},
+  {name:'空港でお願い',badge:'🛎️',id:41,story:'空港スタッフに依頼する。',quests:{pron:72,example:68,conversation:63}},
+  {name:'チェックイン',badge:'🧾',id:35,story:'受付で確認事項を伝える。',quests:{pron:75,example:70,conversation:65}},
+  {name:'搭乗口を確認',badge:'🛫',id:37,story:'案内を聞き返して確認する。',quests:{pron:78,example:72,conversation:68}},
+  {name:'いざ出発！',badge:'🌍',id:61,story:'旅立ちの一言を自信を持って話す。',quests:{pron:80,example:75,conversation:70}},
+ ]},
+ {id:2,name:'旅先の街',icon:'🏙️',theme:'city',stages:[
+  {name:'街へ移動',badge:'🚖',id:73,story:'移動手段や行き先を伝える。',quests:{pron:72,example:68,conversation:63}},
+  {name:'道をたずねる',badge:'🗺️',id:29,story:'場所や道順をたずねる。',quests:{pron:75,example:70,conversation:65}},
+  {name:'待ち合わせ',badge:'🤝',id:18,story:'時間や場所の調整をする。',quests:{pron:77,example:72,conversation:68}},
+  {name:'予定を確認',badge:'📅',id:56,story:'予定や計画を確認する。',quests:{pron:80,example:74,conversation:70}},
+  {name:'お礼を伝える',badge:'🎉',id:90,story:'最後に感謝をしっかり伝える。',quests:{pron:82,example:76,conversation:72}},
+ ]}
+];
+const STAGES=WORLDS.flatMap((w,wi)=>w.stages.map((s,si)=>({...s,world:w.id,worldIndex:wi,stageInWorld:si+1,worldName:w.name,worldIcon:w.icon}))); 
 const TASK_KEYS=['pron','example','conversation'];
-const fresh=()=>({xp:0,completed:[],progress:{},treasures:[],day:DAY(),attempts:0,good:0,dayStages:0,practiceAwarded:0,claimed:[],active:0});
-const bounded=(v,max)=>Number.isFinite(Number(v))?Math.max(0,Math.min(max,Math.round(Number(v)))):0;
-function currentStageIndex(){return Math.min(data.completed.length,STAGES.length-1)}
-function stageUnlocked(i){return i<=data.completed.length}
-function progressFor(i){
- if(!data.progress[String(i)])data.progress[String(i)]={pron:0,example:0,conversation:0};
- const row=data.progress[String(i)];
- for(const key of TASK_KEYS)row[key]=bounded(row[key],100);
- return row;
-}
-function questMin(i,key){return STAGES[i].quests[key].min}
-function questDone(i,key){return progressFor(i)[key]>=questMin(i,key)}
-function stageDone(i){return TASK_KEYS.every(key=>questDone(i,key))}
-function normalizeActive(v){return Number.isInteger(v)&&v>=0&&v<STAGES.length&&stageUnlocked(v)&&!data.completed.includes(v)?v:currentStageIndex()}
-function sanitize(v){
- const x=fresh();
- if(!v||typeof v!=='object'||Array.isArray(v))return x;
- x.xp=bounded(v.xp,1000000);
- x.treasures=Array.isArray(v.treasures)?[...new Set(v.treasures.filter(n=>Number.isInteger(n)&&n>=0&&n<STAGES.length))].sort((a,b)=>a-b):[];
- x.completed=Array.isArray(v.completed)?[...new Set(v.completed.filter(n=>Number.isInteger(n)&&n>=0&&n<STAGES.length))].sort((a,b)=>a-b):[];
- x.completed=x.completed.filter((n,i)=>n===i);
- x.treasures=x.treasures.filter(n=>x.completed.includes(n));
- const rawProgress=v.progress&&typeof v.progress==='object'&&!Array.isArray(v.progress)?v.progress:{};
- for(let i=0;i<STAGES.length;i++){
-  const src=rawProgress[String(i)]&&typeof rawProgress[String(i)]==='object'&&!Array.isArray(rawProgress[String(i)])?rawProgress[String(i)]:{};
-  x.progress[String(i)]={pron:bounded(src.pron,100),example:bounded(src.example,100),conversation:bounded(src.conversation,100)};
- }
- // Migrate old saves: previously a completed stage had no per-task data.
- for(const idx of x.completed){const row=x.progress[String(idx)]||{pron:0,example:0,conversation:0};if(!TASK_KEYS.some(key=>bounded(row[key],100)>0))x.progress[String(idx)]={pron:100,example:100,conversation:100};}
- if(typeof v.day==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(v.day)){
-  x.day=v.day;
-  x.attempts=bounded(v.attempts,1000);
-  x.good=bounded(v.good,1000);
-  x.dayStages=bounded(v.dayStages,STAGES.length);
-  x.practiceAwarded=bounded(v.practiceAwarded,10);
-  x.claimed=Array.isArray(v.claimed)?v.claimed.filter(n=>[0,1,2].includes(n)).slice(0,3):[];
- }
- x.active=Number.isInteger(v.active)?Math.max(0,Math.min(STAGES.length-1,v.active)):currentStageIndex();
- if(x.day!==DAY())resetDay(x);
- // Never trust imported progress to skip stages.
- while(x.completed.length<STAGES.length&&stageDoneForData(x,x.completed.length))x.completed.push(x.completed.length);
- x.active=Number.isInteger(x.active)&&x.active>=0&&x.active<STAGES.length&&x.active<=x.completed.length&&!x.completed.includes(x.active)?x.active:Math.min(x.completed.length,STAGES.length-1);
- return x;
-}
-function stageDoneForData(store,i){
- const row=store.progress[String(i)]||{pron:0,example:0,conversation:0};
- return TASK_KEYS.every(key=>bounded(row[key],100)>=STAGES[i].quests[key].min);
-}
-function resetDay(x){x.day=DAY();x.attempts=0;x.good=0;x.dayStages=0;x.practiceAwarded=0;x.claimed=[]}
+function fresh(){return {xp:0,completed:[],progress:{},active:0,day:today(),attempts:0,good:0,dayStages:0,practiceAwarded:0,claimed:[]}}
+function clamp(v,max){v=Math.round(Number(v)||0);return Math.max(0,Math.min(max,v))}
+function worldRange(worldId){const start=STAGES.findIndex(s=>s.world===worldId);const count=WORLDS.find(w=>w.id===worldId).stages.length;return [start,start+count-1]}
+function activeUnlockedCount(store){return store.completed.length}
+function progressFor(store,i){store.progress=store.progress||{};if(!store.progress[String(i)])store.progress[String(i)]={pron:0,example:0,conversation:0};const row=store.progress[String(i)];for(const k of TASK_KEYS)row[k]=clamp(row[k],100);return row}
+function questDoneStore(store,i,key){return progressFor(store,i)[key]>=STAGES[i].quests[key]}
+function stageDoneStore(store,i){return TASK_KEYS.every(k=>questDoneStore(store,i,k))}
+function resetDay(store){store.day=today();store.attempts=0;store.good=0;store.dayStages=0;store.practiceAwarded=0;store.claimed=[]}
+function sanitize(v){const x=fresh();if(!v||typeof v!=='object'||Array.isArray(v))return x;x.xp=clamp(v.xp,999999);x.completed=Array.isArray(v.completed)?[...new Set(v.completed.filter(n=>Number.isInteger(n)&&n>=0&&n<STAGES.length))].sort((a,b)=>a-b):[];x.completed=x.completed.filter((n,i)=>n===i);const raw=v.progress&&typeof v.progress==='object'&&!Array.isArray(v.progress)?v.progress:{};for(let i=0;i<STAGES.length;i++){const src=raw[String(i)]&&typeof raw[String(i)]==='object'&&!Array.isArray(raw[String(i)])?raw[String(i)]:{};x.progress[String(i)]={pron:clamp(src.pron,100),example:clamp(src.example,100),conversation:clamp(src.conversation,100)}};x.active=Number.isInteger(v.active)?Math.max(0,Math.min(STAGES.length-1,v.active)):x.completed.length;x.day=typeof v.day==='string'?v.day:today();x.attempts=clamp(v.attempts,999);x.good=clamp(v.good,999);x.dayStages=clamp(v.dayStages,STAGES.length);x.practiceAwarded=clamp(v.practiceAwarded,99);x.claimed=Array.isArray(v.claimed)?v.claimed.filter(n=>[0,1,2].includes(n)):[];if(x.day!==today())resetDay(x);while(x.completed.length<STAGES.length && stageDoneStore(x,x.completed.length))x.completed.push(x.completed.length);if(x.active>x.completed.length)x.active=x.completed.length;return x}
 let data;try{data=sanitize(JSON.parse(localStorage.getItem(KEY)||'null'))}catch{data=fresh()}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(data));return true}catch(e){console.warn('English Journey: 保存に失敗しました',e);return false}}
-function daily(){if(data.day!==DAY()){resetDay(data);save()}if(!stageUnlocked(data.active)||data.completed.includes(data.active))data.active=Math.min(data.completed.length,STAGES.length-1)}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){console.warn('Journey save failed',e)}}
+function daily(){if(data.day!==today()){resetDay(data);save()}}
 function level(){return 1+Math.floor(data.xp/150)}
-function missionClaims(){const checks=[data.attempts>=3,data.good>=1,data.dayStages>=1];checks.forEach((yes,i)=>{if(yes&&!data.claimed.includes(i)){data.claimed.push(i);data.xp+=20}})}
-function detectTask(kind){for(const key of TASK_KEYS)if(TASK_META[key].kinds.includes(kind))return key;return ''}
-function onScore(a){
- daily();
- if(!a||!Number.isFinite(Number(a.score)))return;
- const score=Math.max(0,Math.min(100,Number(a.score)));
- data.attempts=Math.min(data.attempts+1,1000);
- if(score>=80)data.good=Math.min(data.good+1,1000);
- if(data.practiceAwarded<10){data.xp+=10;data.practiceAwarded++}
- const idx=data.completed.length, stage=STAGES[idx], task=detectTask(a.kind);
- if(stage&&task&&Number(a.id)===stage.id){
-  const row=progressFor(idx);
-  row[task]=Math.max(row[task]||0,score);
-  if(stageDone(idx)&&!data.completed.includes(idx)){
-   data.completed.push(idx);
-   data.dayStages=Math.min(data.dayStages+1,STAGES.length);
-   data.xp+=50;
-   data.active=Math.min(data.completed.length,STAGES.length-1);
-   window.journeyLastReward=`🎉 ステージ${idx+1}「${stage.name}」クリア！ +50 XP / 宝箱を獲得しました`;
-  }
- }
- missionClaims();save();
-}
-let cursor=Array.isArray(state.history)?state.history.length:0;
-const basePersist=persist;
-persist=function(){
- const size=Array.isArray(state.history)?state.history.length:0;
- if(size<cursor)cursor=size;
- if(size>cursor){for(let i=cursor;i<size;i++)onScore(state.history[i]);cursor=size}
- return basePersist();
-};
-function injectStyles(){
- if(document.getElementById('journey-style-v434'))return;
- const style=document.createElement('style');style.id='journey-style-v434';
- style.textContent=`
- .journey-home,.journey-summary,.journey-stage,.journey-focus,.journey-missions{overflow:hidden;position:relative}
- .journey-home{margin:12px 0;background:linear-gradient(135deg,#15365a 0%,#255faa 45%,#67c4ff 100%);color:#fff;border:0;box-shadow:0 10px 26px #0f2d4d33}
- .journey-home::after,.journey-summary::after{content:'';position:absolute;inset:auto -18px -18px auto;width:130px;height:130px;border-radius:50%;background:#ffffff18;filter:blur(2px)}
- .journey-title{font-size:20px;font-weight:900;letter-spacing:.01em;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
- .journey-title span,.journey-sub{font-size:12px;font-weight:700;opacity:.9;background:#ffffff1e;padding:4px 9px;border-radius:999px}
- .journey-skyline{display:flex;justify-content:space-between;gap:10px;align-items:flex-end;margin-top:10px}
- .journey-ship{font-size:40px;filter:drop-shadow(0 8px 14px #08274370)}
- .journey-home .journey-stats,.journey-summary .journey-stats{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 8px}
- .journey-chip{font-size:12px;font-weight:800;border-radius:999px;padding:7px 11px;background:#ffffff1b;color:inherit}
- .journey-home .journey-bar,.journey-summary .journey-bar{height:12px;border-radius:999px;background:#ffffff30;overflow:hidden;margin:8px 0 12px}
- .journey-home .journey-bar span,.journey-summary .journey-bar span{display:block;height:100%;background:linear-gradient(90deg,#ffe27a,#ffd04f,#ffb22f);border-radius:999px}
- .journey-home .btn{background:#fff;color:#16457d}
- .journey-world{display:grid;gap:10px;padding-bottom:80px}
- .journey-summary{background:linear-gradient(135deg,#112d4d,#174a7b 55%,#236ca7);color:#fff;border:0}
- .journey-summary p.tiny,.journey-summary .tiny{color:#eef7ff}
- .journey-focus{background:linear-gradient(135deg,#fff4d8,#ffe8a8 50%,#fff8e7);border:1px solid #f1cd6f}
- .journey-focus .journey-stage-hero{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}
- .journey-focus-badge{font-size:34px}
- .journey-focus .journey-stage-name{font-size:20px;font-weight:900;color:#7a4300}
- .journey-task-grid{display:grid;gap:8px;margin-top:10px}
- .journey-task{border:1px solid #f0d48f;background:#fffaf1;border-radius:14px;padding:10px 11px}
- .journey-task.done{border-color:#34a36f;background:#eefbf3}
- .journey-task-head{display:flex;justify-content:space-between;gap:10px;align-items:center}
- .journey-task-head strong{font-size:15px;color:#614000}
- .journey-task.done .journey-task-head strong{color:#166643}
- .journey-task-score{font-size:12px;font-weight:900;color:#174066;background:#e6f1ff;border-radius:999px;padding:5px 8px;white-space:nowrap}
- .journey-task.done .journey-task-score{background:#ddf5e8;color:#166643}
- .journey-task p{font-size:12px;margin:6px 0;color:#6f5d2f}
- .journey-task .btn{margin-top:7px}
- .journey-stage-list h2,.journey-missions h2{margin-bottom:8px}
- .journey-stage{border:1px solid #d8e6f1;background:linear-gradient(135deg,#fff,#f6fbff);border-radius:16px;padding:12px 12px 11px;margin-top:10px}
- .journey-stage.done{border-color:#7ad2a6;background:linear-gradient(135deg,#effcf3,#f8fffb)}
- .journey-stage.locked{opacity:.66;background:linear-gradient(135deg,#f5f7fa,#eef2f6)}
- .journey-stage-heading{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
- .journey-stage-heading strong{font-size:16px;color:#153b61}
- .journey-stage.done .journey-stage-heading strong{color:#17704a}
- .journey-stage-heading span{font-size:12px;color:#47616a;background:#edf5ff;border-radius:999px;padding:4px 8px;white-space:nowrap}
- .journey-stage p{font-size:13px;margin:7px 0}
- .journey-miniquests{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:8px}
- .journey-miniquest{border-radius:12px;padding:8px 6px;background:#edf4ff;border:1px solid #d8e6fb;font-size:11px;text-align:center;color:#23496c;font-weight:800}
- .journey-miniquest.done{background:#e8f8ef;border-color:#9dd8b7;color:#156443}
- .journey-miniquest small{display:block;font-size:10px;font-weight:700;opacity:.85;margin-top:3px}
- .journey-stage-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
- .journey-stage-actions .btn{flex:1 1 150px}
- .journey-mission{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid #d7e0e9;font-size:13px}.journey-mission:first-of-type{border-top:0}
- .journey-mission strong{white-space:nowrap}
- .journey-reward{padding:12px;border-radius:12px;background:#e4f6e9;color:#116b36;font-weight:800;margin-bottom:10px;border:1px solid #b8e0c3}
- .journey-world-banner{padding:11px 13px;border-radius:14px;color:white;background:linear-gradient(120deg,#155790,#3f96d0);font-size:15px;font-weight:900}
- .journey-world-banner.world2{background:linear-gradient(120deg,#74419d,#d080c6)}
- .journey-world-banner.locked{opacity:.6}
- .journey-treasure{display:flex;align-items:center;gap:10px;padding:12px;margin:8px 0;border-radius:14px;background:linear-gradient(100deg,#fff2bb,#fff9e7);border:1px solid #e6bd61}
- .journey-treasure button{margin-left:auto;min-width:98px}
- .journey-treasure-icon{font-size:30px;filter:drop-shadow(0 3px 4px #d2a34177)}
- .journey-treasure.claimed{background:#effbf2;border-color:#93d6ac}
- .journey-reward{animation:journeyCelebrate .7s ease-out both}
- @keyframes journeyCelebrate{0%{transform:scale(.88);opacity:.2}50%{transform:scale(1.04);opacity:1}100%{transform:scale(1);opacity:1}}
- @media(prefers-reduced-motion:reduce){.journey-reward{animation:none}}
-
- /* v4.0.34 game compact layout and quest medals */
- .journey-world{gap:7px;padding-bottom:65px}
- .journey-world>.card{margin-bottom:1px;padding:10px 11px}
- .journey-summary .journey-title{font-size:17px;color:#fff}.journey-summary .journey-title span{color:#fff}
- .journey-summary>p.tiny:first-of-type{display:none}
- .journey-summary .journey-chip{padding:4px 8px;font-size:11px}
- .journey-summary .journey-stats{gap:5px;margin:7px 0}
- .journey-summary .journey-bar{height:7px;margin:6px 0}
- .journey-summary>p.tiny:last-child{font-size:10px;line-height:1.35;margin:2px 0}
- .journey-focus .journey-stage-name{font-size:18px}
- .journey-focus .journey-stage-hero{margin-bottom:3px}
- .journey-focus .journey-focus-badge{font-size:27px}
- .journey-focus>.tiny{font-size:11px;line-height:1.35;margin:3px 0}
- .journey-task-grid{gap:5px;margin-top:7px}
- .journey-task{padding:8px 9px;display:grid;grid-template-columns:minmax(0,1fr) minmax(112px,40%);column-gap:8px;align-items:center;border-radius:10px}
- .journey-task-head{display:flex;align-items:center;gap:5px;min-width:0;flex-wrap:wrap}
- .journey-task-head strong{font-size:13px;display:flex;gap:4px;align-items:center}
- .journey-task-score{font-size:11px;padding:3px 7px}
- .journey-task p{display:none}
- .journey-task>.btn{grid-column:2;grid-row:1;min-height:44px;padding:7px 4px;font-size:12px;margin:0}
- .journey-task>.tiny{grid-column:2;grid-row:1}
- .quest-medal{display:inline-grid;place-items:center;font-size:17px;filter:drop-shadow(0 1px 2px #bf7d1269)}
- .journey-fold-hint{display:block;color:#61798d;font-size:11px;font-weight:500;margin-top:2px}
- .journey-stage-list{padding:10px 11px}
- .journey-world-fold{margin-top:6px;border:1px solid #d5e2ee;border-radius:12px;overflow:hidden}
- .journey-world-fold>summary{cursor:pointer;list-style:none;border-radius:0!important;padding:9px 11px;font-size:14px;min-height:44px;display:flex;align-items:center;justify-content:space-between}
- .journey-world-fold>summary::-webkit-details-marker{display:none}
- .journey-world-fold>summary:after{content:'▾';font-size:16px;opacity:.85;margin-left:8px}
- .journey-world-fold:not([open])>summary:after{content:'▸'}
- .journey-world-fold .journey-stage{margin:6px 7px;padding:8px 9px;border-radius:10px}
- .journey-stage-heading strong{font-size:13px}
- .journey-stage-heading span{font-size:10px;padding:3px 6px}
- .journey-stage p{font-size:11px;margin:3px 0;line-height:1.35}
- .journey-stage.locked p{display:none}
- .journey-miniquests{gap:4px;margin-top:5px}
- .journey-miniquest{padding:5px 4px;font-size:10px;border-radius:8px}
- .journey-miniquest.done{background:linear-gradient(115deg,#fff6ce,#fbe3a0);border-color:#e7b65d;color:#744a00}
- .journey-miniquest.done:before{content:'🏅 ';font-size:11px}
- .journey-miniquest small{font-size:10px;margin-top:1px}
- .journey-stage-actions{margin-top:6px}
- .journey-stage-actions .btn{min-height:44px;font-size:12px}
- .journey-treasure{padding:7px;margin:5px 0;gap:6px;border-radius:9px}
- .journey-treasure-icon{font-size:21px}
- .journey-treasure button{min-width:88px;min-height:44px;font-size:12px}
- .journey-mission{padding:8px 0}
- @media(max-width:360px){.journey-task{grid-template-columns:minmax(0,1fr) 118px}.journey-miniquests{grid-template-columns:repeat(3,minmax(0,1fr))}}
-
-
- /* v4.0.35: home adventure banner - high contrast and compact */
- .journey-home{margin:8px 0!important;padding:12px 13px!important;min-height:0;background:linear-gradient(120deg,#143b68 0%,#155d9c 100%)!important;box-shadow:0 4px 16px #173d6526}
- .journey-home::after{display:none!important}
- .journey-home-header{display:flex;justify-content:space-between;gap:7px;align-items:center;flex-wrap:wrap}
- .journey-home-heading{font-size:18px;font-weight:900;color:#fff!important;line-height:1.25;text-shadow:0 1px 2px #07233c70}
- .journey-home-world{font-size:11px;line-height:1.3;font-weight:800;color:#103b67!important;background:#e7f4ff!important;border-radius:8px;padding:5px 7px;opacity:1!important}
- .journey-home-progress{display:flex;justify-content:space-between;gap:8px;color:#fff!important;font-size:12px;font-weight:700;margin-top:9px}
- .journey-home-progress strong{color:#fff!important}
- .journey-home .journey-bar{height:7px!important;background:#ffffff4d!important;margin:5px 0 7px!important}
- .journey-home .journey-bar span{background:#ffda75!important}
- .journey-home-next{font-size:12px;line-height:1.4;font-weight:700;color:#fff!important;overflow-wrap:anywhere;margin:3px 0 9px}
- .journey-home .journey-home-action{min-height:44px;padding:9px 12px;font-size:14px;font-weight:900;color:#124578!important;background:#fff!important;border-radius:10px;margin:0!important}
- @media(max-width:360px){.journey-home-heading{font-size:16px}.journey-home-world{font-size:10px}}
-
- @media(max-width:360px){.journey-miniquests{grid-template-columns:1fr}.journey-stage-actions{display:grid}.journey-stage-actions .btn{flex:auto}}
- `;
- document.head.appendChild(style);
-}
-function stageStatusLabel(i){return data.completed.includes(i)?'クリア':i>data.completed.length?'未開放':i===data.completed.length?'挑戦中':'挑戦可能'}
-function questStatus(i,key){return questDone(i,key)?'達成':'未達成'}
-function questButtonClass(key){return key==='pron'?'blue':key==='example'?'green':'orange'}
-function nextStageText(){
- if(data.completed.length>=STAGES.length)return '全ワールド制覇！';
- const stage=STAGES[data.completed.length];
- const remain=TASK_KEYS.filter(key=>!questDone(data.completed.length,key)).length;
- return `次の目標：ステージ${data.completed.length+1}「${stage.name}」 残り${remain}課題`;
-}
-function homePanel(){
- const doneCount=data.completed.length;
- const progress=Math.round(doneCount/STAGES.length*100);
- const worldLabel=doneCount>=5?'ワールド2｜旅先の街':'ワールド1｜旅立ちの空港';
- return `<section class="card journey-home" aria-label="English Journey 冒険の進行状況"><div class="journey-home-header"><div class="journey-home-heading">✈ English Journey</div><span class="journey-home-world">${worldLabel}</span></div><div class="journey-home-progress"><span>Lv.${level()} · ${data.xp} XP</span><strong>${doneCount}/${STAGES.length} ステージ</strong></div><div class="journey-bar" role="progressbar" aria-label="ステージ達成率" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${progress}"><span style="width:${progress}%"></span></div><div class="journey-home-next">${esc(nextStageText())}</div><button class="btn full journey-home-action" onclick="go('journey')">冒険を続ける ›</button></section>`;
-}
-function stageCard(i){
- const s=STAGES[i], done=data.completed.includes(i), locked=i>data.completed.length, active=i===data.active||(data.completed.length===i&&stageUnlocked(i));
- return `<div class="journey-stage ${done?'done':''} ${locked?'locked':''}"><div class="journey-stage-heading"><strong>${done?'🏆':locked?'🔒':s.badge} ステージ${i<5?i+1:i-4}　${esc(s.name)}</strong><span>${stageStatusLabel(i)}</span></div><p>${esc(s.story)}</p><div class="journey-miniquests">${TASK_KEYS.map(key=>`<div class="journey-miniquest ${questDone(i,key)?'done':''}">${TASK_META[key].label}<small>${Math.min(progressFor(i)[key],100)} / ${questMin(i,key)}%</small></div>`).join('')}</div>${done?treasurePanel(i):''}${!locked&&!active?`<div class="journey-stage-actions"><button class="btn outline" onclick="journeyOpen(${i})">このステージを表示</button></div>`:''}</div>`;
-}
-function titleName(){
- const n=data.completed.length;
- if(n>=STAGES.length)return '伝説の旅人';
- if(n>=5)return '世界を歩く冒険者';
- if(n>=3)return '空港マスター';
- if(n>=1)return '旅の見習い';
- return '新米トラベラー';
-}
-function treasurePanel(i){
- const claimed=data.treasures.includes(i);
- return `<div class="journey-treasure ${claimed?'claimed':''}"><span class="journey-treasure-icon">${claimed?'🏅':'🎁'}</span><span style="font-size:12px;font-weight:800">${claimed?'宝箱 開封済み':'クリア報酬の宝箱'}<small style="display:block;font-weight:400">${claimed?'報酬を受け取りました':'開封で +20 XP（1回限り）'}</small></span>${claimed?'':`<button type="button" class="btn orange" onclick="journeyClaimTreasure(${i})">宝箱を開ける</button>`}</div>`;
-}
-window.journeyClaimTreasure=function(i){
- if(!Number.isInteger(i)||i<0||i>=STAGES.length||!data.completed.includes(i)||data.treasures.includes(i))return;
- data.treasures.push(i);data.treasures.sort((a,b)=>a-b);data.xp=Math.min(1000000,data.xp+20);
- save();window.journeyLastReward=`🎁 宝箱を開封！ +20 XP`;render();
-};
-function focusPanel(){
- const i=Math.min(data.active,STAGES.length-1), s=STAGES[i], done=data.completed.includes(i), locked=i>data.completed.length;
- if(locked)return '';
- const row=progressFor(i);
- return `<div class="card journey-focus"><div class="journey-stage-hero"><div><div class="journey-stage-name">${esc(s.name)}</div><div class="tiny">${esc(s.story)}</div></div><div class="journey-focus-badge">${s.badge}</div></div><div class="tiny">このステージは <b>発音・例文・AI会話</b> の3課題をすべて達成するとクリアです。課題ごとに目標達成率が異なります。</div><div class="journey-task-grid">${TASK_KEYS.map(key=>{const meta=TASK_META[key], score=Math.min(row[key],100), doneTask=questDone(i,key);return `<div class="journey-task ${doneTask?'done':''}"><div class="journey-task-head"><strong>${doneTask?'<span class="quest-medal" aria-label="達成">🏅</span> ':''}${meta.label}</strong><span class="journey-task-score">${score} / ${questMin(i,key)}%</span></div><p>${meta.reward}</p>${done?`<div class="tiny">この課題は達成済みです。</div>`:`<button class="btn ${questButtonClass(key)} full" onclick="journeyPlay(${i},'${key}')">${doneTask?'もう一度練習':meta.button}</button>`}</div>`}).join('')}</div>${done?`<p class="tiny" style="margin-top:10px">このステージはクリア済みです。復習する場合は各学習モードから練習できます。</p>`:''}</div>`;
-}
-function journeyPanel(){
- const levelRemain=150-data.xp%150||150;
- const missions=[['今日3回発音・会話を練習',data.attempts,3],['80%以上の採点を1回',data.good,1],['ステージを1つクリア',data.dayStages,1]];
- return `<div class="journey-world"><div class="card journey-summary"><div class="journey-title">🗺️ English Journey <span>2ワールド / 全10ステージ</span></div><p class="tiny">空港と旅先の街を舞台にした10のステージを順番に攻略します。各ステージは、同じチャンクを使って「発音」「例文」「AI会話」の3課題を全部クリアすると達成です。</p><div class="journey-stats"><span class="journey-chip">レベル <b>${level()}</b></span><span class="journey-chip">獲得XP <b>${data.xp}</b></span><span class="journey-chip">称号 <b>${titleName()}</b></span><span class="journey-chip">次のレベルまで <b>${levelRemain}</b> XP</span></div><div class="journey-bar"><span style="width:${(data.xp%150)/150*100}%"></span></div><p class="tiny">ステージ達成 +50 XP ／ 宝箱 +20 XP ／ 採点1回 +10 XP（1日10回まで）／ ミッション達成 +20 XP</p></div>${focusPanel()}<div class="card journey-stage-list"><h2>ステージ一覧 <small class="journey-fold-hint">各ワールドをタップして展開</small></h2><details class="journey-world-fold" ${data.completed.length<5?'open':''}><summary class="journey-world-banner">✈ ワールド1｜旅立ちの空港</summary>${STAGES.slice(0,5).map((s,i)=>stageCard(i)).join('')}</details><details class="journey-world-fold" ${data.completed.length>=5?'open':''}><summary class="journey-world-banner world2 ${data.completed.length<5?'locked':''}">🌆 ワールド2｜旅先の街 ${data.completed.length<5?'🔒':''}</summary>${STAGES.slice(5,10).map((s,i)=>stageCard(i+5)).join('')}</details><p class="tiny">各ステージは順番に開放されます。目標未満だった課題は何度でも再挑戦できます。</p></div><div class="card journey-missions"><h2>今日のデイリーミッション</h2><p class="tiny">日付が変わると進捗はリセットされます（端末の現地時間）。報酬は条件達成時に自動付与されます。</p>${missions.map(([label,value,goal],i)=>`<div class="journey-mission"><span>${data.claimed.includes(i)?'🏅 ':''}${esc(label)}</span><strong>${Math.min(value,goal)}/${goal}${data.claimed.includes(i)?'　+20 XP':''}</strong></div>`).join('')}</div><button class="btn outline full" onclick="go('home')">ホームへ戻る</button></div>`;
-}
-const baseRender=render;
-render=function(){
- daily();injectStyles();baseRender();
- if(state.page==='home'){
-  const target=document.querySelector('.modes');if(target)target.insertAdjacentHTML('beforebegin',homePanel());
- }else if(state.page==='journey'){
-  if(!stageUnlocked(data.active)||data.completed.includes(data.active))data.active=Math.min(data.completed.length,STAGES.length-1);
-  $('app').innerHTML=header('English Journey')+journeyPanel();
-  const pager=document.getElementById('fixedChunkPager');if(pager)pager.hidden=true;updateFooter();applySettings();
- }else if(state.page==='results'&&window.journeyLastReward){
-  const result=document.querySelector('.result-card');if(result)result.insertAdjacentHTML('afterbegin',`<div class="journey-reward" role="status">${esc(window.journeyLastReward)}</div>`);
-  window.journeyLastReward='';
- }
-};
-window.journeyOpen=function(i){daily();if(!Number.isInteger(i)||i<0||i>=STAGES.length||i>data.completed.length)return;data.active=i;save();render()};
-window.journeyPlay=function(i,key){
- daily();
- if(!Number.isInteger(i)||i<0||i>=STAGES.length||i>data.completed.length||!TASK_KEYS.includes(key))return;
- data.active=i;save();
- state.id=STAGES[i].id;state.variant=0;state.answer=0;
- go(TASK_META[key].mode);
-};
-window.journeyStart=function(i){window.journeyOpen(i)};
-window.journeyTest={get:()=>JSON.parse(JSON.stringify(sanitize(data))),stageCount:STAGES.length,sanitize,score:onScore,day:daily,currentStage:()=>data.completed.length,questDone:(i,key)=>questDone(i,key),taskKinds:(key)=>TASK_META[key]?.kinds||[],title:titleName};
-window.journeyBackup=()=>JSON.parse(JSON.stringify(sanitize(data)));
-window.journeyRestore=v=>{data=sanitize(v);save()};
-render();
+function levelRemain(){const mod=data.xp%150;return mod===0?150:150-mod}
+function titleForStage(i){const s=STAGES[i];return `ワールド${s.world} ステージ${s.stageInWorld} ${s.name}`}
+function nextObjective(){if(data.completed.length>=STAGES.length)return '全ステージ達成！';const s=STAGES[data.completed.length];const remain=TASK_KEYS.filter(k=>!questDoneStore(data,data.completed.length,k)).length;return `${titleForStage(data.completed.length)}｜残り${remain}課題`}
+function stageStatus(i){return data.completed.includes(i)?'達成':i>data.completed.length?'未開放':'挑戦中'}
+function unlocked(i){return i<=data.completed.length}
+function missionChecks(){const checks=[data.attempts>=3,data.good>=1,data.dayStages>=1];checks.forEach((ok,i)=>{if(ok && !data.claimed.includes(i)){data.claimed.push(i);data.xp+=20}})}
+function detectTask(kind){for(const k of TASK_KEYS)if(TASK_META[k].kinds.includes(kind))return k;return ''}
+function onScore(rec){daily();if(!rec||!Number.isFinite(Number(rec.score)))return;const score=Math.max(0,Math.min(100,Number(rec.score)));data.attempts=Math.min(data.attempts+1,999);if(score>=80)data.good=Math.min(data.good+1,999);if(data.practiceAwarded<10){data.xp+=10;data.practiceAwarded++}
+ const idx=data.completed.length;const stage=STAGES[idx];const task=detectTask(rec.kind);
+ if(stage&&task&&Number(rec.id)===stage.id){const row=progressFor(data,idx);row[task]=Math.max(row[task],score);if(stageDoneStore(data,idx)&&!data.completed.includes(idx)){data.completed.push(idx);data.dayStages=Math.min(data.dayStages+1,STAGES.length);data.xp+=50;data.active=Math.min(data.completed.length,STAGES.length-1);window.journeyLastReward=`${titleForStage(idx)} を達成！ +50 XP`;}}
+ missionChecks();save();}
+ let cursor=Array.isArray(state?.history)?state.history.length:0;
+ const basePersist=window.persist;
+ if(typeof basePersist==='function')window.persist=function(){const size=Array.isArray(state?.history)?state.history.length:0;if(size<cursor)cursor=size;if(size>cursor){for(let i=cursor;i<size;i++)onScore(state.history[i]);cursor=size}return basePersist()};
+ function escHtml(s){return typeof esc==='function'?esc(s):String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+ function activeStageIndex(){return Math.min(data.active,STAGES.length-1,Math.max(0,data.completed.length))}
+ function homeBanner(){const count=data.completed.length;const pct=Math.round(count/STAGES.length*100);return `<section class="card journey-home-card"><div class="journey-home-top"><div><div class="journey-home-title">🧭 English Journey</div><div class="journey-home-world">${escHtml(nextObjective())}</div></div><div class="journey-home-ship">✈️</div></div><div class="journey-home-meta"><span>Lv ${level()}</span><span>${data.xp} XP</span><span>${count}/${STAGES.length} 達成</span></div><div class="journey-home-bar"><span style="width:${Math.max(8,pct)}%"></span></div><button class="btn journey-home-button full" onclick="go('journey')">🗺️ 冒険を続ける</button></section>`}
+ function taskButton(i,key){return `<button class="btn ${key==='pron'?'blue':key==='example'?'green':'orange'} full" onclick="journeyPlay(${i},'${key}')">${TASK_META[key].button}</button>`}
+ function focusPanel(){const i=activeStageIndex();const s=STAGES[i];const row=progressFor(data,i);return `<section class="card journey-focus-card"><div class="journey-focus-title">現在挑戦中</div><div class="journey-focus-name">${escHtml(titleForStage(i))}</div><div class="journey-focus-story">${escHtml(s.story)}</div><div class="journey-focus-tasks">${TASK_KEYS.map(k=>`<div class="journey-focus-task ${questDoneStore(data,i,k)?'done':''}"><div class="journey-focus-task-head"><strong>${questDoneStore(data,i,k)?'🏅 ':''}${TASK_META[k].label}</strong><span>${progressFor(data,i)[k]} / ${s.quests[k]}%</span></div><div class="journey-focus-task-hint">${TASK_META[k].hint}</div>${data.completed.includes(i)?`<div class="journey-task-done">達成済み</div>`:taskButton(i,k)}</div>`).join('')}</div></section>`}
+ function stageSummary(i){const s=STAGES[i];const row=progressFor(data,i);const status=stageStatus(i);const done=data.completed.includes(i);const locked=!unlocked(i);const badge=done?'<span class="journey-status status-achieved">達成</span>':locked?'<span class="journey-status status-locked">未開放</span>':'<span class="journey-status status-active">挑戦中</span>';return `<details class="journey-stage-item ${done?'done':''} ${locked?'locked':''}" ${i===activeStageIndex()&&!done?'open':''}><summary><div class="journey-stage-summary"><div class="journey-stage-left"><span class="journey-stage-badge">${s.badge}</span><div><div class="journey-stage-name">ステージ${s.stageInWorld} ${escHtml(s.name)}</div><div class="journey-stage-sub">${escHtml(s.story)}</div></div></div>${badge}</div></summary><div class="journey-stage-body"><div class="journey-stage-mini">${TASK_KEYS.map(k=>`<div class="journey-mini ${questDoneStore(data,i,k)?'done':''}"><b>${TASK_META[k].label}</b><small>${row[k]} / ${s.quests[k]}%</small></div>`).join('')}</div>${!locked?`<div class="journey-stage-actions"><button class="btn outline" onclick="journeyOpen(${i})">このステージを見る</button>${!done?TASK_KEYS.map(k=>`<button class="btn ${k==='pron'?'blue':k==='example'?'green':'orange'}" onclick="journeyPlay(${i},'${k}')">${TASK_META[k].label}</button>`).join(''):''}</div>`:''}</div></details>`}
+ function worldCard(w,wi){const [start,end]=worldRange(w.id);const total=w.stages.length;const doneCount=data.completed.filter(i=>i>=start&&i<=end).length;const locked=wi>0 && data.completed.length<start;return `<section class="card journey-world-card ${locked?'locked':''}"><div class="journey-world-head"><div><div class="journey-world-title">${w.icon} ワールド${w.id} ${escHtml(w.name)}</div><div class="journey-world-sub">${doneCount}/${total} ステージ達成</div></div>${locked?'<span class="journey-status status-locked">ワールド1を達成で開放</span>':''}</div>${w.stages.map((_,si)=>stageSummary(start+si)).join('')}</section>`}
+ function missionPanel(){const missions=[['今日3回練習',data.attempts,3,0],['80%以上を1回',data.good,1,1],['ステージを1つ達成',data.dayStages,1,2]];return `<section class="card journey-missions"><h2>デイリーミッション</h2>${missions.map(([label,val,goal,idx])=>`<div class="journey-mission"><span>${data.claimed.includes(idx)?'✓ ':''}${label}</span><strong>${Math.min(val,goal)}/${goal}${data.claimed.includes(idx)?' +20XP':''}</strong></div>`).join('')}</section>`}
+ function journeyPage(){return `<div class="journey-shell"><section class="card journey-summary-card"><div class="journey-summary-title">${nextObjective()}</div><div class="journey-summary-meta"><span>レベル ${level()}</span><span>${data.xp} XP</span><span>次まで ${levelRemain()} XP</span></div></section>${focusPanel()}${WORLDS.map(worldCard).join('')}${missionPanel()}</div>`}
+ function injectStyles(){if(document.getElementById('journey-style-v438'))return;const style=document.createElement('style');style.id='journey-style-v438';style.textContent=`
+ .journey-home-card{margin:10px 0 14px;background:linear-gradient(135deg,#143762 0%,#1b558c 55%,#2679bf 100%);color:#fff;border:none;box-shadow:0 10px 24px #0d2f5040;padding:14px}
+ .journey-home-top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.journey-home-title{font-size:18px;font-weight:900;letter-spacing:.01em}.journey-home-world{font-size:12px;line-height:1.45;background:#ffffff1c;border-radius:999px;padding:5px 10px;margin-top:6px;display:inline-block}.journey-home-ship{font-size:34px;filter:drop-shadow(0 4px 10px #0a2740a0)}
+ .journey-home-meta{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 8px}.journey-home-meta span{font-size:12px;font-weight:800;background:#ffffff22;border-radius:999px;padding:4px 9px}.journey-home-bar{height:8px;border-radius:99px;background:#ffffff2d;overflow:hidden;margin:0 0 12px}.journey-home-bar span{display:block;height:100%;background:linear-gradient(90deg,#ffe27a,#ffbc42)}
+ .journey-home-button{background:linear-gradient(135deg,#ffb24a,#ff8f21 56%,#ff7a00)!important;color:#fff!important;border:1px solid #f48914!important;box-shadow:0 8px 16px #a84e002e;font-weight:900;letter-spacing:.02em}
+ .journey-shell{display:grid;gap:10px;padding-bottom:82px}.journey-summary-card{padding:12px 13px;background:linear-gradient(135deg,#fff7e6,#fff1c9);border:1px solid #f0d287}.journey-summary-title{font-size:16px;font-weight:900;color:#754400;line-height:1.35}.journey-summary-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.journey-summary-meta span{font-size:12px;background:#fff7e2;border:1px solid #f2d39a;border-radius:999px;padding:4px 8px;font-weight:800;color:#6d4900}
+ .journey-focus-card{padding:12px;border:1px solid #d8e7f6;background:linear-gradient(135deg,#ffffff,#f5fbff)}.journey-focus-title{font-size:12px;font-weight:800;color:#4a6481;margin-bottom:4px}.journey-focus-name{font-size:18px;font-weight:900;color:#133b61;line-height:1.3}.journey-focus-story{font-size:12px;color:#536776;margin:5px 0 8px}.journey-focus-tasks{display:grid;gap:8px}.journey-focus-task{border:1px solid #d7e4f2;background:#fff;border-radius:12px;padding:10px}.journey-focus-task.done{border-color:#8fd0ac;background:#f3fcf6}.journey-focus-task-head{display:flex;justify-content:space-between;gap:8px;align-items:center}.journey-focus-task-head strong{font-size:14px;color:#28415d}.journey-focus-task-head span{font-size:11px;font-weight:900;background:#edf4ff;border-radius:999px;padding:4px 7px;color:#18486f;white-space:nowrap}.journey-focus-task-hint{font-size:12px;color:#65727f;margin:5px 0 8px}.journey-task-done{font-size:12px;font-weight:900;color:#167449}
+ .journey-world-card{padding:12px;border:1px solid #dce7f0;background:#fff}.journey-world-card.locked{opacity:.72}.journey-world-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;margin-bottom:8px}.journey-world-title{font-size:17px;font-weight:900;color:#1b4772}.journey-world-sub{font-size:12px;color:#557188;margin-top:3px}
+ .journey-status{font-size:11px;font-weight:900;border-radius:999px;padding:5px 8px;white-space:nowrap}.status-achieved{background:#e7faef;color:#0b7544;border:1px solid #8ad3a7}.status-active{background:#eaf4ff;color:#125ea8;border:1px solid #8ab6e4}.status-locked{background:#f1f4f7;color:#687887;border:1px solid #d7dde4}
+ .journey-stage-item{border-top:1px solid #e3ebf2}.journey-stage-item:first-of-type{border-top:none}.journey-stage-item>summary{list-style:none;cursor:pointer;padding:10px 0}.journey-stage-item>summary::-webkit-details-marker{display:none}.journey-stage-summary{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.journey-stage-left{display:flex;gap:9px;min-width:0}.journey-stage-badge{font-size:24px;line-height:1}.journey-stage-name{font-size:15px;font-weight:900;color:#163b60;line-height:1.3}.journey-stage-sub{font-size:12px;color:#61717d;line-height:1.4;margin-top:2px}.journey-stage-body{padding:0 0 10px 33px}.journey-stage-mini{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.journey-mini{border:1px solid #dde7f2;background:#f7fbff;border-radius:12px;padding:8px 6px;text-align:center}.journey-mini.done{background:#eefaf3;border-color:#95d3b0}.journey-mini b{display:block;font-size:11px;color:#214564}.journey-mini small{display:block;font-size:10px;color:#61728a;margin-top:3px}.journey-stage-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}.journey-stage-actions .btn{min-width:0;flex:1 1 82px;padding-inline:8px}.journey-stage-item.done .journey-stage-name{color:#12774c}
+ .journey-missions h2{margin-bottom:6px}.journey-mission{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-top:1px solid #d7e0e9;font-size:13px}.journey-mission:first-of-type{border-top:none}.journey-mission strong{white-space:nowrap}
+ @media (max-width:390px){.journey-stage-body{padding-left:0}.journey-stage-mini{grid-template-columns:1fr 1fr 1fr}.journey-home-title{font-size:17px}.journey-focus-name{font-size:17px}}
+ @media (max-width:360px){.journey-stage-actions{display:grid;grid-template-columns:1fr 1fr}.journey-summary-meta,.journey-home-meta{gap:6px}.journey-home-meta span,.journey-summary-meta span{font-size:11px;padding:4px 7px}.journey-stage-mini{grid-template-columns:1fr}.journey-home-button{font-size:15px}}
+ `;document.head.appendChild(style)}
+ const baseRender=window.render;
+ if(typeof baseRender==='function')window.render=function(){daily();injectStyles();baseRender();if(state.page==='home'){const target=document.querySelector('.modes');if(target&&!document.querySelector('.journey-home-card'))target.insertAdjacentHTML('beforebegin',homeBanner())}else if(state.page==='journey'){$('app').innerHTML=header('冒険')+journeyPage();const pager=document.getElementById('fixedChunkPager');if(pager)pager.hidden=true;updateFooter();applySettings();}else if(state.page==='results'&&window.journeyLastReward){const result=document.querySelector('.result-card');if(result&&!result.querySelector('.journey-reward'))result.insertAdjacentHTML('afterbegin',`<div class="journey-reward">${escHtml(window.journeyLastReward)}</div>`);window.journeyLastReward='';}}
+ window.journeyOpen=function(i){daily();if(!Number.isInteger(i)||i<0||i>=STAGES.length||!unlocked(i))return;data.active=i;save();go('journey')}
+ window.journeyPlay=function(i,key){daily();if(!Number.isInteger(i)||i<0||i>=STAGES.length||!unlocked(i)||!TASK_KEYS.includes(key))return;data.active=i;save();state.id=STAGES[i].id;state.variant=0;state.answer=0;go(TASK_META[key].mode)}
+ window.journeyBackup=function(){return sanitize(data)}
+ window.journeyRestore=function(v){data=sanitize(v);save()}
+ window.journeyTest={get:()=>sanitize(data),titleForStage,activeStageIndex,stageStatus:(i)=>stageStatus(i),questDone:(i,k)=>questDoneStore(data,i,k)}
+ if(typeof render==='function')render();
 })();
