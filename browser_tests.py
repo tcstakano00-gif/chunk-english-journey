@@ -1,4 +1,4 @@
-"""Deterministic Chromium regression suite for Chunk English v4.0.28.
+"""Deterministic Chromium regression suite for Chunk English v4.0.32.
 Actual microphone recognition on iOS needs on-device testing.
 """
 from playwright.sync_api import sync_playwright
@@ -40,13 +40,14 @@ def run():
           window.webkitSpeechRecognition=MockSpeechRecognition;
         """
         page.set_content(ROOT.joinpath('index.html').read_text(encoding='utf-8'),wait_until='domcontentloaded')
+        page.add_script_tag(content=ROOT.joinpath('journey.js').read_text(encoding='utf-8'))
         page.evaluate("() => {"+MOCK_SCRIPT+"}")
-        check('initial homepage',lambda: assert_true(page.locator('.app-version').inner_text().startswith('v4.0.28')))
+        check('initial homepage',lambda: assert_true(page.locator('.app-version').inner_text().startswith('v4.0.32')))
         check('all three modes render',lambda: [page.evaluate("(m)=>go(m)",m) for m in ['pron','example','conversation']])
         check('question and reply buttons separate',lambda: assert_true(page.locator('[data-mic-button]').count()==2))
         def speech(page_id,kind,expected):
             page.evaluate('(v)=>go(v)',page_id)
-            page.locator(f'[data-mic-kind="{kind}"]').click()
+            (page.evaluate('(k)=>toggleStudyPopup(k)',kind) if kind!='chunk' else None); page.locator(f'[data-mic-kind="{kind}"]').click()
             page.evaluate('([kind])=>{const r=window.__speechInstances.at(-1);r.result(target(kind));r.onend?.({})}',[kind])
             page.wait_for_function("state.page==='results'",timeout=2000)
             assert page.locator('.result-card').count()==1
@@ -57,7 +58,7 @@ def run():
             check('speech score and back '+kind,lambda pg=pg,kind=kind:speech(pg,kind,pg))
         def error(kind,code):
             page.evaluate('(v)=>go(v)', 'example' if kind.startswith('example') else 'conversation' if kind in ('question','reply') else 'pron')
-            btn=page.locator(f'[data-mic-kind="{kind}"]');btn.click()
+            (page.evaluate('(k)=>toggleStudyPopup(k)',kind) if kind!='chunk' else None);btn=page.locator(f'[data-mic-kind="{kind}"]');btn.click()
             assert 'mic-active' in btn.get_attribute('class')
             page.evaluate('(v)=>window.__speechInstances.at(-1).error(v)',code)
             assert 'mic-active' not in btn.get_attribute('class')
@@ -69,7 +70,7 @@ def run():
             check('network error recovery '+k,lambda k=k:error(k,'network'))
         def manual():
             page.evaluate("go('example')")
-            page.locator('[data-mic-kind="example"]').click()
+            page.evaluate("toggleStudyPopup('example')");page.locator('[data-mic-kind="example"]').click()
             page.locator('.v4-qa').nth(1).locator('button').last.click()
             assert page.evaluate('state.page')=='example'
             assert page.locator('[data-mic-kind="example"]').is_enabled()
@@ -79,7 +80,7 @@ def run():
             page.evaluate("go('conversation')")
             first=page.locator('[data-mic-kind="question"]')
             other=page.locator('[data-mic-kind="reply"]')
-            first.click()
+            page.evaluate("toggleStudyPopup('question')");first.click()
             assert 'mic-active' in first.get_attribute('class')
             assert 'mic-active' not in other.get_attribute('class')
             page.evaluate('finishListening()')
@@ -97,16 +98,16 @@ def run():
         check('mic banner and release after success',mic_banner_success)
         def mic_banner_error():
             page.evaluate("go('example')")
-            page.locator('[data-mic-kind="exampleQuestion"]').click()
-            assert page.locator('#microphoneLiveBanner').is_visible()
+            page.evaluate("toggleStudyPopup('exampleQuestion')");page.locator('[data-mic-kind="exampleQuestion"]').click()
+            assert page.locator('.study-popup-mic:not([hidden])').is_visible()
             page.evaluate("window.__speechInstances.at(-1).error('network')")
             assert page.locator('#microphoneLiveBanner').is_hidden()
             assert page.evaluate('window.__speechInstances.at(-1).aborted')==True
         check('mic banner and release on error',mic_banner_error)
         def mic_banner_stop():
             page.evaluate("go('conversation')")
-            page.locator('[data-mic-kind="reply"]').click()
-            assert page.locator('#microphoneLiveBanner').is_visible()
+            page.evaluate("toggleStudyPopup('reply')");page.locator('[data-mic-kind="reply"]').click()
+            assert page.locator('.study-popup-mic:not([hidden])').is_visible()
             page.evaluate('finishListening()')
             assert page.locator('#microphoneLiveBanner').is_hidden()
             assert page.evaluate('window.__speechInstances.at(-1).aborted')==True

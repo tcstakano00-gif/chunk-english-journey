@@ -6,6 +6,7 @@ const doc={getElementById:el,querySelectorAll(){return []},querySelector(){retur
 const win={addEventListener(){},scrollTo(){},SpeechRecognition:null,webkitSpeechRecognition:null};
 const context={document:doc,window:win,navigator:{},location:{protocol:'file:',hostname:''},localStorage:{getItem(){return null},setItem(){},removeItem(){}},console,Date,Math,JSON,Array,Number,Object,String,Set,Map,RegExp,Intl,encodeURIComponent,decodeURIComponent,alert(){},confirm(){return true},setTimeout,clearTimeout,setInterval,clearInterval,URL,Blob,fetch:async()=>({ok:false})};
 vm.createContext(context);for(let i=0;i<scripts.length;i++)vm.runInContext(scripts[i],context,{filename:'app-script-'+i+'.js'});
+vm.runInContext(fs.readFileSync(require('path').join(__dirname,'journey.js'),'utf8'),context,{filename:'journey.js'});
 const pass=[];function test(name,func){try{func();pass.push(name)}catch(e){console.error('FAIL',name,e.stack);process.exitCode=1}}
 const cases=[['chunk','pron'],['exampleQuestion','example'],['example','example'],['registeredExample','example'],['question','conversation'],['aiReply','conversation'],['reply','conversation'],['scene','conversation']];
 for(const [kind,page] of cases){test('result '+kind,()=>{vm.runInContext(`state.page='results';state.latest={kind:${JSON.stringify(kind)},target:'Sounds good.',heard:'Sounds good.',score:100,feedback:'良いです',date:'today'};render()`,context);assert.ok(el('app').innerHTML.includes('result-card'));assert.strictEqual(vm.runInContext(`resultReturnPage(${JSON.stringify(kind)})`,context),page)})}
@@ -128,7 +129,7 @@ const qButton=fakeMic('question'),aButton=fakeMic('reply');
 const eqButton=fakeMic('exampleQuestion'),eaButton=fakeMic('example');
 function assertSingleActive(active,other){
  assert.ok(active.classList.contains('mic-active'),'pressed button must pulse');
- assert.strictEqual(active.label.textContent,'聞き取り中\n停止する');
+ assert.strictEqual(active.label.textContent,'聞き取り中…');
  assert.ok(!other.classList.contains('mic-active'),'other button must not pulse');
  assert.strictEqual(other.label.textContent,'発音');
  assert.strictEqual(other.disabled,false,'other button must not be dimmed');
@@ -199,7 +200,7 @@ test('v425 native TTS voice selector and preview',()=>{
  assert.ok(html.includes('function englishVoices()'));
  assert.ok(html.includes('function previewStudyVoice('));
  assert.ok(!html.includes('id="voiceBaseSelect"'));
- assert.ok(html.includes('20音声の試作サンプル比較'));
+ assert.ok(html.includes('20音声の試作サンプルを比較する'));
  assert.ok(html.includes("speakText(target(kind))"));
 });
 test('v425 AI1 and AI2 original robot assets',()=>{
