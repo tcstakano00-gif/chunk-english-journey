@@ -39,8 +39,8 @@ with sync_playwright() as p:
   assert page.evaluate('settingAvatarTab')=='You'
  check('single avatar selector with three tabs',avatar_tabs)
  def compact_details():
-  assert page.locator('.settings-advanced').count()==1
-  assert not page.locator('.settings-advanced').evaluate('(e)=>e.open')
+  assert page.locator('.settings-advanced').count()==3
+  assert all(not e for e in page.locator('.settings-advanced').evaluate_all('(els)=>els.map(e=>e.open)'))
   assert page.locator('.compact-avatar-section .settings-help').count()==1
  check('advanced tools folded by default',compact_details)
  check('no browser JS errors',lambda: (_ for _ in ()).throw(AssertionError(errors)) if errors else None)

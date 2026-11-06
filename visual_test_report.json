@@ -35,7 +35,7 @@
     {
       "check": "pixel snapshot journey-390",
       "pass": true,
-      "detail": "changed pixels=0.00%, allowed=2.5%"
+      "detail": "changed pixels=0.62%, allowed=2.5%"
     },
     {
       "check": "pixel snapshot settings-390",
@@ -85,7 +85,7 @@
     {
       "check": "pixel snapshot journey-375",
       "pass": true,
-      "detail": "changed pixels=0.00%, allowed=2.5%"
+      "detail": "changed pixels=0.63%, allowed=2.5%"
     },
     {
       "check": "pixel snapshot settings-375",
