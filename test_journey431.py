@@ -16,7 +16,8 @@ with sync_playwright() as p:
     load()
     def home():
         assert page.locator('.journey-home').count()==1
-        assert 'ワールド2' in page.locator('.journey-home').inner_text()
+        assert 'English Journey' in page.locator('.journey-home').inner_text()
+        assert '/10 ステージ' in page.locator('.journey-home').inner_text()
     check('home two-world adventure',home)
     def world():
         page.evaluate("go('journey')")

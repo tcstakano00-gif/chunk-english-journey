@@ -210,6 +210,21 @@ function injectStyles(){
  .journey-mission{padding:8px 0}
  @media(max-width:360px){.journey-task{grid-template-columns:minmax(0,1fr) 118px}.journey-miniquests{grid-template-columns:repeat(3,minmax(0,1fr))}}
 
+
+ /* v4.0.35: home adventure banner - high contrast and compact */
+ .journey-home{margin:8px 0!important;padding:12px 13px!important;min-height:0;background:linear-gradient(120deg,#143b68 0%,#155d9c 100%)!important;box-shadow:0 4px 16px #173d6526}
+ .journey-home::after{display:none!important}
+ .journey-home-header{display:flex;justify-content:space-between;gap:7px;align-items:center;flex-wrap:wrap}
+ .journey-home-heading{font-size:18px;font-weight:900;color:#fff!important;line-height:1.25;text-shadow:0 1px 2px #07233c70}
+ .journey-home-world{font-size:11px;line-height:1.3;font-weight:800;color:#103b67!important;background:#e7f4ff!important;border-radius:8px;padding:5px 7px;opacity:1!important}
+ .journey-home-progress{display:flex;justify-content:space-between;gap:8px;color:#fff!important;font-size:12px;font-weight:700;margin-top:9px}
+ .journey-home-progress strong{color:#fff!important}
+ .journey-home .journey-bar{height:7px!important;background:#ffffff4d!important;margin:5px 0 7px!important}
+ .journey-home .journey-bar span{background:#ffda75!important}
+ .journey-home-next{font-size:12px;line-height:1.4;font-weight:700;color:#fff!important;overflow-wrap:anywhere;margin:3px 0 9px}
+ .journey-home .journey-home-action{min-height:44px;padding:9px 12px;font-size:14px;font-weight:900;color:#124578!important;background:#fff!important;border-radius:10px;margin:0!important}
+ @media(max-width:360px){.journey-home-heading{font-size:16px}.journey-home-world{font-size:10px}}
+
  @media(max-width:360px){.journey-miniquests{grid-template-columns:1fr}.journey-stage-actions{display:grid}.journey-stage-actions .btn{flex:auto}}
  `;
  document.head.appendChild(style);
@@ -226,7 +241,8 @@ function nextStageText(){
 function homePanel(){
  const doneCount=data.completed.length;
  const progress=Math.round(doneCount/STAGES.length*100);
- return `<section class="card journey-home"><div class="journey-title">✈ English Journey <span>ワールド1・旅立ちの空港 / ワールド2・旅先の街</span></div><div class="journey-sub">${esc(nextStageText())}</div><div class="journey-stats"><span class="journey-chip">レベル ${level()}</span><span class="journey-chip">${data.xp} XP</span><span class="journey-chip">${doneCount}/${STAGES.length} ステージ</span></div><div class="journey-bar"><span style="width:${Math.max(progress,doneCount?14:8)}%"></span></div><div class="journey-skyline"><div><div style="font-size:13px;font-weight:700;opacity:.95">空港から旅先の街へ！ 2つのワールドを冒険</div><div class="tiny" style="color:#f7fbff">各ステージは 発音・例文・AI会話 の3課題をすべて達成するとクリアです。</div></div><div class="journey-ship">🛫</div></div><button class="btn full" onclick="go('journey')" style="margin-top:12px">冒険を続ける ›</button></section>`;
+ const worldLabel=doneCount>=5?'ワールド2｜旅先の街':'ワールド1｜旅立ちの空港';
+ return `<section class="card journey-home" aria-label="English Journey 冒険の進行状況"><div class="journey-home-header"><div class="journey-home-heading">✈ English Journey</div><span class="journey-home-world">${worldLabel}</span></div><div class="journey-home-progress"><span>Lv.${level()} · ${data.xp} XP</span><strong>${doneCount}/${STAGES.length} ステージ</strong></div><div class="journey-bar" role="progressbar" aria-label="ステージ達成率" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${progress}"><span style="width:${progress}%"></span></div><div class="journey-home-next">${esc(nextStageText())}</div><button class="btn full journey-home-action" onclick="go('journey')">冒険を続ける ›</button></section>`;
 }
 function stageCard(i){
  const s=STAGES[i], done=data.completed.includes(i), locked=i>data.completed.length, active=i===data.active||(data.completed.length===i&&stageUnlocked(i));

@@ -1,4 +1,4 @@
-"""Deterministic Chromium regression suite for Chunk English v4.0.34.
+"""Deterministic Chromium regression suite for Chunk English v4.0.36.
 Actual microphone recognition on iOS needs on-device testing.
 """
 from playwright.sync_api import sync_playwright
@@ -42,7 +42,7 @@ def run():
         page.set_content(ROOT.joinpath('index.html').read_text(encoding='utf-8'),wait_until='domcontentloaded')
         page.add_script_tag(content=ROOT.joinpath('journey.js').read_text(encoding='utf-8'))
         page.evaluate("() => {"+MOCK_SCRIPT+"}")
-        check('initial homepage',lambda: assert_true(page.locator('.app-version').inner_text().startswith('v4.0.34')))
+        check('initial homepage',lambda: assert_true(page.locator('.app-version').inner_text().startswith('v4.0.36')))
         check('all three modes render',lambda: [page.evaluate("(m)=>go(m)",m) for m in ['pron','example','conversation']])
         check('question and reply buttons separate',lambda: assert_true(page.locator('[data-mic-button]').count()==2))
         def speech(page_id,kind,expected):
