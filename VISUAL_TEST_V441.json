@@ -1,0 +1,24 @@
+[
+  {
+    "viewport": "375x812",
+    "world_arrows": "PASS",
+    "stage_font_px": 18,
+    "quest_buttons_one_row": "PASS",
+    "avatar_dimensions_object_fit": "PASS",
+    "example_popup_fixed_height": "PASS",
+    "ai_popup_fixed_height": "PASS",
+    "no_horizontal_overflow": "PASS",
+    "pageerrors": []
+  },
+  {
+    "viewport": "390x844",
+    "world_arrows": "PASS",
+    "stage_font_px": 18,
+    "quest_buttons_one_row": "PASS",
+    "avatar_dimensions_object_fit": "PASS",
+    "example_popup_fixed_height": "PASS",
+    "ai_popup_fixed_height": "PASS",
+    "no_horizontal_overflow": "PASS",
+    "pageerrors": []
+  }
+]
