@@ -89,6 +89,10 @@ function onScore(a){
    data.xp+=50;
    data.active=Math.min(data.completed.length,STAGES.length-1);
    window.journeyLastReward=`🎉 ステージ${idx+1}「${stage.name}」クリア！ +50 XP / 宝箱を獲得しました`;
+   // A transient UI-only event: rewards and completion are already saved exactly once.
+   window.journeyCelebrationQueue=[{type:'stage',index:idx,name:stage.name,xp:50}];
+   if((idx+1)%5===0){window.journeyCelebrationQueue.push({type:'world',world:Math.floor(idx/5)+1,name:idx<5?'旅立ちの空港':'旅先の街'});}
+
   }
  }
  missionClaims();save();
@@ -345,6 +349,67 @@ function journeyPanel(){
  const missions=[['今日3回発音・会話を練習',data.attempts,3],['80%以上の採点を1回',data.good,1],['ステージを1つ達成',data.dayStages,1]];
  return `<div class="journey-world"><div class="card journey-summary"><div class="journey-title">🗺️ English Journey <span>2ワールド / 全10ステージ</span></div><p class="tiny">空港と旅先の街を舞台にした10のステージを順番に攻略します。各ステージは、同じチャンクを使って「発音」「例文」「AI会話」の3課題を全部達成するとステージ達成です。</p><div class="journey-stats"><span class="journey-chip">レベル <b>${level()}</b></span><span class="journey-chip">獲得XP <b>${data.xp}</b></span><span class="journey-chip">称号 <b>${titleName()}</b></span><span class="journey-chip">次のレベルまで <b>${levelRemain}</b> XP</span></div><div class="journey-bar"><span style="width:${(data.xp%150)/150*100}%"></span></div><p class="tiny">ステージ達成 +50 XP ／ 宝箱 +20 XP ／ 採点1回 +10 XP（1日10回まで）／ ミッション達成 +20 XP</p></div>${focusPanel()}<div class="card journey-stage-list"><h2>ステージ一覧 <small class="journey-fold-hint">各ワールドをタップして展開</small></h2><details class="journey-world-fold" ${data.completed.length<5?'open':''}><summary class="journey-world-banner"><span>✈ ワールド1｜旅立ちの空港</span><span class="journey-world-arrow" aria-hidden="true"></span></summary>${STAGES.slice(0,5).map((s,i)=>stageCard(i)).join('')}</details><details class="journey-world-fold" ${data.completed.length>=5?'open':''}><summary class="journey-world-banner world2 ${data.completed.length<5?'locked':''}"><span>🌆 ワールド2｜旅先の街 ${data.completed.length<5?'🔒':''}</span><span class="journey-world-arrow" aria-hidden="true"></span></summary>${STAGES.slice(5,10).map((s,i)=>stageCard(i+5)).join('')}</details><p class="tiny">各ステージは順番に開放されます。目標未満だった課題は何度でも再挑戦できます。</p></div><div class="card journey-missions"><h2>今日のデイリーミッション</h2><p class="tiny">日付が変わると進捗はリセットされます（端末の現地時間）。報酬は条件達成時に自動付与されます。</p>${missions.map(([label,value,goal],i)=>`<div class="journey-mission"><span>${data.claimed.includes(i)?'🏅 ':''}${esc(label)}</span><strong>${Math.min(value,goal)}/${goal}${data.claimed.includes(i)?'　+20 XP':''}</strong></div>`).join('')}</div><button class="btn outline full" onclick="go('home')">ホームへ戻る</button></div>`;
 }
+
+/* v4.0.47: short celebratory animation, no repeated strobe flashes. */
+function installCelebrationStyles(){
+ if(document.getElementById('journey-celebration-v447'))return;
+ const css=document.createElement('style');css.id='journey-celebration-v447';css.textContent=`
+ .ej-celebration[hidden]{display:none!important}
+ .ej-celebration{position:fixed;inset:0;z-index:5000;display:grid;place-items:center;padding:20px 10px max(22px,env(safe-area-inset-bottom));background:#03091ddd;isolation:isolate;overflow:hidden}
+ .ej-celebration:before{content:'';position:absolute;inset:-15%;background:radial-gradient(ellipse at center,#74a9ff92 0%,#2d57b432 40%,transparent 70%);opacity:0;pointer-events:none;animation:ejLightSweep 1.15s ease-out both}
+ .ej-celebration.world:before{background:radial-gradient(ellipse at center,#d3abff8f 0%,#9a49e632 45%,transparent 75%)}
+ .ej-win-card{position:relative;z-index:1;width:min(460px,100%);max-height:calc(100dvh - 36px);overflow-y:auto;text-align:center;padding:23px 17px 20px;border-radius:25px;color:#fff;border:2px solid #e3bc63;background:linear-gradient(155deg,#071a42,#102a67 55%,#0a467b);box-shadow:0 0 26px #e8bc6570,0 20px 65px #0008;animation:ejCardReveal .54s cubic-bezier(.2,1.35,.5,1) both}
+ .ej-celebration.world .ej-win-card{border-color:#e1bfff;background:linear-gradient(150deg,#151037,#37216f 65%,#671879);box-shadow:0 0 36px #ae80ff7b,0 20px 65px #0009}
+ .ej-win-eyebrow{font-weight:900;color:#ffe7a6;font-size:clamp(16px,4.6vw,23px);letter-spacing:.08em;margin:4px 0 7px}
+ .ej-kusudama{height:106px;position:relative;margin:-7px auto 2px;width:140px}
+ .ej-kusudama:before{content:'';position:absolute;left:50%;top:0;width:2px;height:27px;background:#f9d08e;transform:translateX(-50%)}
+ .ej-kusu-half{position:absolute;width:64px;height:64px;top:26px;border:3px solid #ffe6a1;background:radial-gradient(circle at 60% 30%,#fff3b9,#e8a53c 68%,#c06b29);box-shadow:inset 0 0 9px #fff7;transform-origin:100% 52%;animation:ejKusuLeft 1.3s .25s ease-in-out both}
+ .ej-kusu-half.left{left:6px;border-radius:64px 0 0 64px}
+ .ej-kusu-half.right{right:6px;border-radius:0 64px 64px 0;transform-origin:0 52%;animation-name:ejKusuRight}
+ .ej-celebration.world .ej-kusu-half{background:radial-gradient(circle at 60% 30%,#fff4cf,#c785ff 60%,#7135ae)}
+ .ej-celebration .ej-particle{position:absolute;z-index:2;left:50%;top:76px;width:9px;height:14px;border-radius:2px;background:var(--particle-color,#ffdb6d);opacity:0;pointer-events:none;animation:ejParticleFall 1.85s var(--particle-delay,0s) ease-out both}
+ .ej-win-icon{font-size:clamp(65px,21vw,105px);line-height:1.05;filter:drop-shadow(0 5px 12px #ffcc6688);animation:ejIconPop .9s .45s cubic-bezier(.2,1.4,.5,1) both}
+ .ej-win-title{font-size:clamp(24px,7.8vw,38px);font-weight:1000;line-height:1.1;color:#fff;text-shadow:0 0 20px #56ceffb8;margin:10px 0 8px;overflow-wrap:anywhere}
+ .ej-celebration.world .ej-win-title{text-shadow:0 0 20px #ecb7ff}
+ .ej-win-subtitle{font-size:clamp(19px,5.7vw,26px);font-weight:900;color:#ffe29b;line-height:1.3;margin:5px 0}
+ .ej-win-name{font-size:clamp(18px,5vw,23px);font-weight:800;line-height:1.45;color:#f1f6ff}
+ .ej-win-xp{font-size:clamp(23px,7vw,32px);font-weight:1000;color:#69f4ed;margin:15px 0}
+ .ej-win-action{display:grid;grid-template-columns:1fr;gap:9px;margin-top:15px}
+ .ej-win-action button{font-size:16px;font-weight:900;min-height:48px;border:0;border-radius:13px;cursor:pointer;background:linear-gradient(135deg,#2f96ff,#155bd1);color:#fff}
+ .ej-win-action button.secondary{background:#fff2;border:1px solid #9dbeeb;color:#fff}
+ @keyframes ejLightSweep{0%,100%{opacity:0}38%{opacity:.48}}
+ @keyframes ejCardReveal{from{opacity:0;transform:translateY(14px) scale(.89)}to{opacity:1;transform:none}}
+ @keyframes ejKusuLeft{0%,28%{transform:rotate(0)}75%,100%{transform:translateX(-7px) rotate(-57deg)}}
+ @keyframes ejKusuRight{0%,28%{transform:rotate(0)}75%,100%{transform:translateX(7px) rotate(57deg)}}
+ @keyframes ejParticleFall{0%{opacity:0;transform:translate(-50%,-4px) rotate(0deg)}12%{opacity:1}85%{opacity:1}100%{opacity:0;transform:translate(calc(-50% + var(--particle-x)),var(--particle-y,260px)) rotate(var(--particle-rotate,320deg))}}
+ @keyframes ejIconPop{0%{opacity:0;transform:scale(.45)}65%{transform:scale(1.13)}100%{opacity:1;transform:scale(1)}}
+ @media(prefers-reduced-motion:reduce){.ej-celebration:before,.ej-win-card,.ej-kusu-half,.ej-win-icon,.ej-particle{animation:none!important}.ej-celebration:before{opacity:0}.ej-particle{display:none}.ej-kusu-half.left{transform:translateX(-7px) rotate(-57deg)}.ej-kusu-half.right{transform:translateX(7px) rotate(57deg)}}
+ `;document.head.appendChild(css)
+}
+let celebrationLock=false;
+function showCelebration(){
+ const queue=window.journeyCelebrationQueue;
+ if(celebrationLock||!Array.isArray(queue)||!queue.length)return;
+ const event=queue[0];if(!event||!['stage','world'].includes(event.type))return;
+ installCelebrationStyles();celebrationLock=true;
+ const isWorld=event.type==='world';
+ const mainText=isWorld?`ワールド${event.world} 達成！`:`ステージ${event.index%5+1} 達成！`;
+ const icon=isWorld?'👑':'👍';
+ const bits=Array.from({length:20},(_,i)=>{const x=((i*37)%280)-140,y=175+(i*43)%160,delay=(i%6)*.045,rot=(i%2?-1:1)*(180+i*31),color=['#fbe279','#8bebff','#d8b0ff','#fff0c2','#7ff2e0'][i%5];return `<span class="ej-particle" style="--particle-x:${x}px;--particle-y:${y}px;--particle-delay:${delay}s;--particle-rotate:${rot}deg;--particle-color:${color}"></span>`}).join('');
+ const div=document.createElement('div');div.id='journeyCelebration';div.className='ej-celebration '+(isWorld?'world':'stage');div.setAttribute('role','dialog');div.setAttribute('aria-modal','true');div.setAttribute('aria-label',mainText);
+ div.innerHTML=`<div class="ej-win-card"><div class="ej-kusudama"><div class="ej-kusu-half left"></div><div class="ej-kusu-half right"></div>${bits}</div><div class="ej-win-eyebrow">★ おめでとう ★</div><div class="ej-win-icon" aria-hidden="true">${icon}</div><div class="ej-win-title">${isWorld?'WORLD COMPLETE!':'MISSION COMPLETE!'}</div><div class="ej-win-subtitle">${mainText}</div><div class="ej-win-name">${esc(event.name)}</div>${isWorld?'<div class="ej-win-xp">🏆 ワールド制覇！</div>':'<div class="ej-win-xp">+50 XP</div>'}<div class="ej-win-action"><button type="button" id="journeyCelebrateNext">${isWorld?'冒険へ戻る':queue.length>1?'続ける':'次のステージへ'}</button><button type="button" class="secondary" id="journeyCelebrateClose">閉じる</button></div></div>`;
+ document.body.appendChild(div);
+ const primary=div.querySelector('#journeyCelebrateNext');
+ const advance=goToJourney=>{
+  div.remove();celebrationLock=false;queue.shift();
+  if(queue.length){showCelebration();return}
+  window.journeyCelebrationQueue=[];
+  if(goToJourney)go('journey');
+ };
+ primary.addEventListener('click',()=>advance(true));div.querySelector('#journeyCelebrateClose').addEventListener('click',()=>advance(false));
+ primary.focus({preventScroll:true});
+}
+
 const baseRender=render;
 render=function(){
  daily();injectStyles();baseRender();
@@ -358,6 +423,7 @@ render=function(){
   const result=document.querySelector('.result-card');if(result)result.insertAdjacentHTML('afterbegin',`<div class="journey-reward" role="status"><span class="journey-reward-medal" aria-hidden="true">🏆</span><span><strong>ステージ達成！</strong><small>${esc(window.journeyLastReward)}</small></span></div>`);
   window.journeyLastReward='';
  }
+ if(state.page==='results' && Array.isArray(window.journeyCelebrationQueue) && window.journeyCelebrationQueue.length){showCelebration();}
 };
 window.journeyOpen=function(i){daily();if(!Number.isInteger(i)||i<0||i>=STAGES.length||i>data.completed.length)return;data.active=i;save();render()};
 window.journeyPlay=function(i,key){
