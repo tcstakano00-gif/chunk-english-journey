@@ -15,7 +15,7 @@ with sync_playwright() as p:
   page.set_content((ROOT/'index.html').read_text(),wait_until='load')
   page.add_script_tag(content=(ROOT/'journey.js').read_text())
   def home():
-   assert page.locator('.app-version').inner_text()=='v4.0.39 β'
+   assert page.locator('.app-version').inner_text()=='v4.0.40 β'
    assert page.locator('.journey-home-action').count()==1
    assert page.locator('.journey-home-action').bounding_box()['height']>=44
    assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')

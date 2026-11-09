@@ -249,6 +249,24 @@ function injectStyles(){
  .journey-reward strong{display:block;font-size:19px}.journey-reward small{display:block;font-size:12px;line-height:1.4;margin-top:2px}
  @keyframes journey-reward-pop{0%{opacity:.35;transform:scale(.95) translateY(8px)}65%{transform:scale(1.025)}100%{opacity:1;transform:scale(1)}}
  @keyframes journey-medal-shine{0%{transform:rotate(-14deg) scale(.7)}55%{transform:rotate(11deg) scale(1.22)}100%{transform:rotate(0) scale(1)}}
+ /* v4.0.40: adventure call-to-action and readable compact stage rows */
+ .journey-home{padding:10px 12px!important}
+ .journey-home-action{display:flex!important;align-items:center!important;justify-content:center!important;gap:9px!important;position:relative;overflow:hidden;min-height:49px!important;padding:8px 12px!important;border-radius:14px!important;border:2px solid #ffe5a4!important;background:linear-gradient(165deg,#ffca62 0%,#fb9924 46%,#dc580d 100%)!important;box-shadow:inset 0 2px 1px #fff3c8aa,inset 0 -3px 0 #a84a0a8c,0 5px 10px #642b1840!important;text-shadow:0 1px 2px #7f35006e;transition:transform .12s,filter .12s}
+ .journey-home .journey-home-action{background-image:linear-gradient(165deg,#ffca62 0%,#fb9924 46%,#dc580d 100%)!important;background-color:#f58d21!important}
+ .journey-home-action:active{transform:translateY(2px);box-shadow:inset 0 2px 4px #8e3e1566!important}
+ .journey-action-icon{font-size:22px;line-height:1}.journey-action-label{font-size:17px;letter-spacing:.04em}.journey-action-arrow{font-size:18px;background:#ffffff32;border:1px solid #fff6;border-radius:50%;width:29px;height:29px;display:grid;place-items:center}
+ .journey-world-fold .journey-stage{padding:7px 9px!important;margin:6px 5px!important;background:linear-gradient(110deg,#fff,#f0f7ff)!important;border:1px solid #c7dff4!important;border-left:4px solid #4c98dd!important}
+ .journey-world-fold .journey-stage.done{border-left-color:#32aa70!important;background:linear-gradient(110deg,#f4fff7,#eaf9f1)!important}
+ .journey-world-fold .journey-stage.locked{border-left-color:#a9b7c7!important;background:#f6f8fa!important}
+ .journey-stage>summary{min-height:48px!important;padding:5px 0!important;align-items:center!important;gap:5px!important}
+ .journey-stage-heading strong{display:flex;align-items:center;gap:8px;font-size:16px!important;line-height:1.35!important;min-width:0;flex:1;font-weight:900;overflow-wrap:anywhere}
+ .journey-stage-symbol{font-size:22px;line-height:1;flex:none}
+ .journey-stage-label{display:block;min-width:0}
+ .journey-stage-heading .journey-status{font-size:11px!important;flex:none;max-width:76px;text-align:center;white-space:normal}
+ .journey-stage>summary::after{flex:0 0 27px!important;width:27px!important;height:30px!important;font-size:14px!important}
+ .journey-stage-body p{font-size:13px!important;line-height:1.45!important;margin:6px 0 9px!important}
+ .journey-miniquest{font-size:13px!important}.journey-miniquest small{font-size:12px!important}
+ @media(max-width:370px){.journey-stage-heading strong{font-size:15px!important}.journey-stage-symbol{font-size:20px}.journey-stage-heading .journey-status{font-size:10px!important;max-width:68px}.journey-action-label{font-size:16px}}
  @media(prefers-reduced-motion:reduce){.journey-reward,.journey-reward-medal{animation:none!important}}
 `;
  document.head.appendChild(style);
@@ -266,12 +284,12 @@ function homePanel(){
  const n=data.completed.length, pct=Math.round(n/STAGES.length*100);
  const i=Math.min(n,STAGES.length-1),s=STAGES[i];
  const worldLabel=n>=STAGES.length?'全ワールド達成！':`${s.worldIcon|| (i<5?'✈':'🌆')} ワールド${i<5?1:2}・ステージ${i<5?i+1:i-4} ${s.name}`;
- return `<section class="card journey-home" aria-label="English Journey 冒険の進行状況"><div class="journey-home-header"><div class="journey-home-heading">🧭 English Journey <span class="journey-home-level">Lv ${level()}</span></div></div><div class="journey-home-world">${esc(worldLabel)}</div><div class="journey-home-progress"><span>${data.xp} XP</span><strong>${n}/${STAGES.length} ステージ達成</strong></div><div class="journey-bar" role="progressbar" aria-label="ステージ達成率" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><span style="width:${pct}%"></span></div><button class="btn full journey-home-action" onclick="go('journey')">🗺️ 冒険を続ける　➜</button></section>`;
+ return `<section class="card journey-home" aria-label="English Journey 冒険の進行状況"><div class="journey-home-header"><div class="journey-home-heading">🧭 English Journey <span class="journey-home-level">Lv ${level()}</span></div></div><div class="journey-home-world">${esc(worldLabel)}</div><div class="journey-home-progress"><span>${data.xp} XP</span><strong>${n}/${STAGES.length} ステージ達成</strong></div><div class="journey-bar" role="progressbar" aria-label="ステージ達成率" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><span style="width:${pct}%"></span></div><button class="btn full journey-home-action" onclick="go('journey')"><span class="journey-action-icon" aria-hidden="true">🧭</span><span class="journey-action-label">冒険へ出発！</span><span class="journey-action-arrow" aria-hidden="true">➜</span></button></section>`;
 }
 function stageCard(i){
  const s=STAGES[i],done=data.completed.includes(i),locked=i>data.completed.length,active=i===data.active||(data.completed.length===i&&stageUnlocked(i));
  const label=`ステージ${i<5?i+1:i-4}　${esc(s.name)}`;
- return `<details class="journey-stage ${done?'done':''} ${locked?'locked':''}" ${active&&!done?'open':''}><summary class="journey-stage-heading"><strong>${done?'🏆':locked?'🔒':s.badge} ${label}</strong><span class="journey-status ${done?'status-achieved':locked?'status-locked':'status-active'}">${done?'🏅 達成':stageStatusLabel(i)}</span></summary><div class="journey-stage-body"><p>${esc(s.story)}</p><div class="journey-miniquests">${TASK_KEYS.map(key=>`<div class="journey-miniquest ${questDone(i,key)?'done':''}">${TASK_META[key].label}<small>${Math.min(progressFor(i)[key],100)} / ${questMin(i,key)}%</small></div>`).join('')}</div>${done?treasurePanel(i):''}${!locked&&!active?`<div class="journey-stage-actions"><button class="btn outline" onclick="journeyOpen(${i})">このステージを表示</button></div>`:''}</div></details>`;
+ return `<details class="journey-stage ${done?'done':''} ${locked?'locked':''}" ${active&&!done?'open':''}><summary class="journey-stage-heading"><strong><span class="journey-stage-symbol" aria-hidden="true">${done?'🏆':locked?'🔒':s.badge}</span><span class="journey-stage-label">${label}</span></strong><span class="journey-status ${done?'status-achieved':locked?'status-locked':'status-active'}">${done?'🏅 達成':stageStatusLabel(i)}</span></summary><div class="journey-stage-body"><p>${esc(s.story)}</p><div class="journey-miniquests">${TASK_KEYS.map(key=>`<div class="journey-miniquest ${questDone(i,key)?'done':''}">${TASK_META[key].label}<small>${Math.min(progressFor(i)[key],100)} / ${questMin(i,key)}%</small></div>`).join('')}</div>${done?treasurePanel(i):''}${!locked&&!active?`<div class="journey-stage-actions"><button class="btn outline" onclick="journeyOpen(${i})">このステージを表示</button></div>`:''}</div></details>`;
 }
 function titleName(){
  const n=data.completed.length;

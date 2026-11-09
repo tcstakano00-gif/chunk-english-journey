@@ -1,4 +1,4 @@
-"""Deterministic Playwright smoke, regression and visual measurements for v4.0.39.
+"""Deterministic Playwright smoke, regression and visual measurements for v4.0.40.
 Does not claim real iOS microphone verification.
 """
 from playwright.sync_api import sync_playwright
@@ -33,7 +33,7 @@ with sync_playwright() as p:
   page.on('response',lambda r:failures.append((r.status,r.url)) if r.status>=400 and r.url.startswith(url) else None)
   page.set_content((ROOT/'index.html').read_text(),wait_until='load');page.add_script_tag(content=(ROOT/'journey.js').read_text());page.wait_for_timeout(80)
   def home():
-   assert page.locator('.app-version').inner_text()=='v4.0.39 β'
+   assert page.locator('.app-version').inner_text()=='v4.0.40 β'
    assert page.locator('.journey-home-card').count()==1
    btn=page.locator('.journey-home-button')
    assert btn.count()==1 and btn.is_visible()
@@ -43,7 +43,7 @@ with sync_playwright() as p:
    assert page.locator('.journey-home-bar').get_attribute('aria-valuenow')=='0'
    assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
   check(f'{width} home compact adventure banner',home)
-  page.screenshot(path=str(ROOT/f'baseline_home_{width}_v439.png'),full_page=False,animations='disabled')
+  page.screenshot(path=str(ROOT/f'baseline_home_{width}_v440.png'),full_page=False,animations='disabled')
   page.locator('.journey-home-button').click()
   def adventure():
    assert page.locator('.journey-focus-name').inner_text()=='ワールド1 ステージ1 出発の準備'
@@ -53,7 +53,7 @@ with sync_playwright() as p:
    assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
    assert 'gradient' in page.locator('.journey-world-card').first.evaluate('e=>getComputedStyle(e).backgroundImage')
   check(f'{width} adventure world layout and stage fold',adventure)
-  page.screenshot(path=str(ROOT/f'baseline_adventure_{width}_v439.png'),full_page=False,animations='disabled')
+  page.screenshot(path=str(ROOT/f'baseline_adventure_{width}_v440.png'),full_page=False,animations='disabled')
   def routes():
    for mode in ['pron','example','conversation']:
     page.evaluate('(mode)=>go(mode)',mode)
