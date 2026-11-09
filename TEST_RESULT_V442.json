@@ -1,0 +1,20 @@
+[
+  {
+    "screen": "375x812",
+    "avatar_square": 38,
+    "avatar_background": "PASS",
+    "horizontal_swipe": "PASS",
+    "vertical_scroll_isolation": "PASS",
+    "popup_interaction_isolation": "PASS",
+    "pageerrors": []
+  },
+  {
+    "screen": "390x844",
+    "avatar_square": 38,
+    "avatar_background": "PASS",
+    "horizontal_swipe": "PASS",
+    "vertical_scroll_isolation": "PASS",
+    "popup_interaction_isolation": "PASS",
+    "pageerrors": []
+  }
+]
