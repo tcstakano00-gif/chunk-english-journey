@@ -299,18 +299,20 @@ function injectStyles(){
  .journey-focus .journey-task-head strong{color:#154b74!important}
  .journey-focus .journey-task.done .journey-task-head strong{color:#136a4d!important}
  .journey-focus .journey-task p{color:#466073!important}
- .journey-world-fold .journey-stage:not(.is-current){background:linear-gradient(120deg,#354657,#42556b)!important;border:1px solid #657589!important;border-left:4px solid #7b92a6!important;opacity:1!important}
- .journey-world-fold .journey-stage:not(.is-current) .journey-stage-label{color:#eff6ff!important}
- .journey-world-fold .journey-stage:not(.is-current) .journey-stage-body p{color:#e0e9f4!important}
+ .journey-world-fold .journey-stage:not(.is-current){background:linear-gradient(120deg,#e6eaee,#f1f3f6)!important;border:1px solid #c8d0d8!important;border-left:4px solid #aab5c1!important;opacity:1!important}
+ .journey-world-fold .journey-stage:not(.is-current) .journey-stage-label{color:#647585!important}
+ .journey-world-fold .journey-stage:not(.is-current) .journey-stage-body p{color:#667585!important}
  .journey-world-fold .journey-stage:not(.is-current).done{border-left-color:#59c59a!important;background:linear-gradient(120deg,#284d4c,#365c5c)!important}
- .journey-world-fold .journey-stage:not(.is-current).locked{border-left-color:#8290a2!important;background:linear-gradient(120deg,#414754,#505b6a)!important}
- .journey-world-fold .journey-stage.is-current{background:linear-gradient(120deg,#d5eeff,#fff2c8)!important;border:2px solid #1687d3!important;border-left:6px solid #ffb537!important;box-shadow:0 4px 12px #1687d333!important;opacity:1!important}
+ .journey-world-fold .journey-stage:not(.is-current).done .journey-stage-label{color:#f3fff9!important}
+ .journey-world-fold .journey-stage:not(.is-current).done .journey-stage-body p{color:#e4f5ed!important}
+ .journey-world-fold .journey-stage:not(.is-current).locked{border-left-color:#b5bdc7!important;background:linear-gradient(120deg,#edf0f2,#e6eaf0)!important}
+ .journey-world-fold .journey-stage.is-current{background:linear-gradient(120deg,#8bc0eb,#e3c988)!important;border:2px solid #1163aa!important;border-left:6px solid #f3a51e!important;box-shadow:0 4px 14px #0e62a34d!important;opacity:1!important}
  .journey-world-fold .journey-stage.is-current .journey-stage-label{color:#103d6a!important}
  .journey-world-fold .journey-stage.is-current .journey-status{background:#155da5!important;color:#fff!important;border:1px solid #0d4a89!important;font-size:13px!important;font-weight:950!important}
- .journey-world-fold .journey-stage:not(.is-current) .journey-status.status-locked{background:#526171!important;color:#f4f7fc!important;border-color:#8294a7!important}
+ .journey-world-fold .journey-stage:not(.is-current) .journey-status.status-locked{background:#d9dee5!important;color:#657280!important;border-color:#b9c2cc!important}
  .journey-world-fold .journey-stage:not(.is-current) .journey-status.status-achieved{background:#b8eed4!important;color:#064b31!important}
- .journey-world-fold .journey-stage:not(.is-current) .journey-status.status-active{background:#d5e2f3!important;color:#163e62!important}
- .journey-world-fold .journey-stage:not(.is-current)>summary::after{background:#dce6f1!important;color:#203c55!important}
+ .journey-world-fold .journey-stage:not(.is-current) .journey-status.status-active{background:#d9e1e8!important;color:#566b80!important}
+ .journey-world-fold .journey-stage:not(.is-current)>summary::after{background:#e1e6ed!important;color:#4d6275!important}
  @media(prefers-reduced-motion:reduce){.journey-reward,.journey-reward-medal{animation:none!important}}
 `;
  document.head.appendChild(style);
@@ -334,7 +336,7 @@ function stageCard(i){
  const s=STAGES[i],done=data.completed.includes(i),locked=!stageUnlocked(i),active=i===data.active;
  const label=`ステージ${s.stage}　${esc(s.name)}`;
  const isCurrent=i===data.active&&!locked;
- return `<details class="journey-stage ${done?'done':''} ${locked?'locked':''} ${isCurrent?'is-current':''}" ${active&&!done?'open':''}><summary class="journey-stage-heading"><strong><span class="journey-stage-symbol" aria-hidden="true">${done?'🏆':locked?'🔒':s.badge}</span><span class="journey-stage-label">${label}</span></strong><span class="journey-status ${isCurrent?'status-active':done?'status-achieved':locked?'status-locked':'status-active'}">${isCurrent?'★ 挑戦中':done?'🏅 達成':stageStatusLabel(i)}</span></summary><div class="journey-stage-body"><p>${esc(s.story)}</p><div class="journey-miniquests">${TASK_KEYS.map(key=>`<div class="journey-miniquest ${questDone(i,key)?'done':''}">${TASK_META[key].label}<small>${Math.min(progressFor(i)[key],100)} / ${questMin(i,key)}%</small></div>`).join('')}</div>${done?treasurePanel(i):''}${!locked?`<div class="journey-stage-actions"><button class="btn outline" onclick="journeyOpen(${i})">${done?'再挑戦する':'このステージを表示'}</button></div>`:''}</div></details>`;
+ return `<details class="journey-stage ${done?'done':''} ${locked?'locked':''} ${isCurrent?'is-current':''}" ${active&&!done?'open':''}><summary class="journey-stage-heading"><strong><span class="journey-stage-symbol" aria-hidden="true">${done?'🏆':locked?'🔒':s.badge}</span><span class="journey-stage-label">${label}</span></strong><span class="journey-status ${isCurrent?'status-active':done?'status-achieved':locked?'status-locked':'status-active'}">${isCurrent?'★ 挑戦中':done?'🏅 達成':stageStatusLabel(i)}</span></summary><div class="journey-stage-body"><p>${esc(s.story)}</p><div class="journey-miniquests">${TASK_KEYS.map(key=>`<div class="journey-miniquest ${questDone(i,key)?'done':''}">${TASK_META[key].label}<small>${Math.min(progressFor(i)[key],100)} / ${questMin(i,key)}%</small></div>`).join('')}</div>${done?treasurePanel(i):''}${!locked?`<div class="journey-stage-actions"><button class="btn outline" onclick="journeyOpen(${i})">このステージに再挑戦する</button></div>`:''}</div></details>`;
 }
 function titleName(){
  const n=data.completed.length;
