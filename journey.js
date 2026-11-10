@@ -289,6 +289,28 @@ function injectStyles(){
  .journey-stage-body p{font-size:13px!important;line-height:1.45!important;margin:6px 0 9px!important}
  .journey-miniquest{font-size:13px!important}.journey-miniquest small{font-size:12px!important}
  @media(max-width:370px){.journey-stage-heading strong{font-size:15px!important}.journey-stage-symbol{font-size:20px}.journey-stage-heading .journey-status{font-size:10px!important;max-width:68px}.journey-action-label{font-size:16px}}
+
+ /* v4.0.50: only the selected/current challenge uses the bright treatment. */
+ .journey-focus{background:linear-gradient(130deg,#13518f,#1978be 64%,#2aa5d1)!important;border:2px solid #7bd9ff!important;box-shadow:0 6px 18px #08528b4d!important;color:#fff!important}
+ .journey-focus .journey-stage-name{color:#fff!important;font-size:21px!important;line-height:1.35!important}
+ .journey-focus .tiny,.journey-focus .journey-stage-hero .tiny{color:#e7f6ff!important}
+ .journey-focus-current{display:inline-flex;align-items:center;padding:5px 12px;margin-bottom:7px;background:#ffdc68;color:#233751;border-radius:999px;font-size:16px;font-weight:950;letter-spacing:.06em;box-shadow:0 2px 7px #063f7266}
+ .journey-focus .journey-task{background:#f7fbff!important;border-color:#b1dafa!important;color:#123c62!important}
+ .journey-focus .journey-task-head strong{color:#154b74!important}
+ .journey-focus .journey-task.done .journey-task-head strong{color:#136a4d!important}
+ .journey-focus .journey-task p{color:#466073!important}
+ .journey-world-fold .journey-stage:not(.is-current){background:linear-gradient(120deg,#354657,#42556b)!important;border:1px solid #657589!important;border-left:4px solid #7b92a6!important;opacity:1!important}
+ .journey-world-fold .journey-stage:not(.is-current) .journey-stage-label{color:#eff6ff!important}
+ .journey-world-fold .journey-stage:not(.is-current) .journey-stage-body p{color:#e0e9f4!important}
+ .journey-world-fold .journey-stage:not(.is-current).done{border-left-color:#59c59a!important;background:linear-gradient(120deg,#284d4c,#365c5c)!important}
+ .journey-world-fold .journey-stage:not(.is-current).locked{border-left-color:#8290a2!important;background:linear-gradient(120deg,#414754,#505b6a)!important}
+ .journey-world-fold .journey-stage.is-current{background:linear-gradient(120deg,#d5eeff,#fff2c8)!important;border:2px solid #1687d3!important;border-left:6px solid #ffb537!important;box-shadow:0 4px 12px #1687d333!important;opacity:1!important}
+ .journey-world-fold .journey-stage.is-current .journey-stage-label{color:#103d6a!important}
+ .journey-world-fold .journey-stage.is-current .journey-status{background:#155da5!important;color:#fff!important;border:1px solid #0d4a89!important;font-size:13px!important;font-weight:950!important}
+ .journey-world-fold .journey-stage:not(.is-current) .journey-status.status-locked{background:#526171!important;color:#f4f7fc!important;border-color:#8294a7!important}
+ .journey-world-fold .journey-stage:not(.is-current) .journey-status.status-achieved{background:#b8eed4!important;color:#064b31!important}
+ .journey-world-fold .journey-stage:not(.is-current) .journey-status.status-active{background:#d5e2f3!important;color:#163e62!important}
+ .journey-world-fold .journey-stage:not(.is-current)>summary::after{background:#dce6f1!important;color:#203c55!important}
  @media(prefers-reduced-motion:reduce){.journey-reward,.journey-reward-medal{animation:none!important}}
 `;
  document.head.appendChild(style);
@@ -311,7 +333,8 @@ function homePanel(){
 function stageCard(i){
  const s=STAGES[i],done=data.completed.includes(i),locked=!stageUnlocked(i),active=i===data.active;
  const label=`ステージ${s.stage}　${esc(s.name)}`;
- return `<details class="journey-stage ${done?'done':''} ${locked?'locked':''}" ${active&&!done?'open':''}><summary class="journey-stage-heading"><strong><span class="journey-stage-symbol" aria-hidden="true">${done?'🏆':locked?'🔒':s.badge}</span><span class="journey-stage-label">${label}</span></strong><span class="journey-status ${done?'status-achieved':locked?'status-locked':'status-active'}">${done?'🏅 達成':stageStatusLabel(i)}</span></summary><div class="journey-stage-body"><p>${esc(s.story)}</p><div class="journey-miniquests">${TASK_KEYS.map(key=>`<div class="journey-miniquest ${questDone(i,key)?'done':''}">${TASK_META[key].label}<small>${Math.min(progressFor(i)[key],100)} / ${questMin(i,key)}%</small></div>`).join('')}</div>${done?treasurePanel(i):''}${!locked?`<div class="journey-stage-actions"><button class="btn outline" onclick="journeyOpen(${i})">${done?'再挑戦する':'このステージを表示'}</button></div>`:''}</div></details>`;
+ const isCurrent=i===data.active&&!locked;
+ return `<details class="journey-stage ${done?'done':''} ${locked?'locked':''} ${isCurrent?'is-current':''}" ${active&&!done?'open':''}><summary class="journey-stage-heading"><strong><span class="journey-stage-symbol" aria-hidden="true">${done?'🏆':locked?'🔒':s.badge}</span><span class="journey-stage-label">${label}</span></strong><span class="journey-status ${isCurrent?'status-active':done?'status-achieved':locked?'status-locked':'status-active'}">${isCurrent?'★ 挑戦中':done?'🏅 達成':stageStatusLabel(i)}</span></summary><div class="journey-stage-body"><p>${esc(s.story)}</p><div class="journey-miniquests">${TASK_KEYS.map(key=>`<div class="journey-miniquest ${questDone(i,key)?'done':''}">${TASK_META[key].label}<small>${Math.min(progressFor(i)[key],100)} / ${questMin(i,key)}%</small></div>`).join('')}</div>${done?treasurePanel(i):''}${!locked?`<div class="journey-stage-actions"><button class="btn outline" onclick="journeyOpen(${i})">${done?'再挑戦する':'このステージを表示'}</button></div>`:''}</div></details>`;
 }
 function titleName(){
  const n=data.completed.length;
@@ -334,7 +357,7 @@ function focusPanel(){
  const i=Math.min(data.active,STAGES.length-1), s=STAGES[i], done=data.completed.includes(i), locked=!stageUnlocked(i);
  if(locked)return '';
  const row=progressFor(i);
- return `<div class="card journey-focus"><div class="journey-stage-hero"><div><div class="journey-stage-name">${esc(`ワールド${s.world} ステージ${s.stage} ${s.name}`)}</div><div class="tiny">${esc(s.story)}</div></div><div class="journey-focus-badge">${s.badge}</div></div><div class="tiny">このステージは <b>発音・例文・AI会話</b> の3課題をすべて達成するとステージ達成です。課題ごとに目標達成率が異なります。</div><div class="journey-task-grid">${TASK_KEYS.map(key=>{const meta=TASK_META[key], score=Math.min(row[key],100), doneTask=questDone(i,key);return `<div class="journey-task ${doneTask?'done':''}"><div class="journey-task-head"><strong>${doneTask?'<span class="quest-medal" aria-label="達成">🏅</span> ':''}${meta.label}</strong><span class="journey-task-score">${score} / ${questMin(i,key)}%</span></div><p>${meta.reward}</p><button class="btn ${questButtonClass(key)} full" onclick="journeyPlay(${i},'${key}')">${done||doneTask?'再挑戦':meta.label+'に挑戦'}</button></div>`}).join('')}</div>${done?`<p class="tiny" style="margin-top:10px">達成済みでも何度でも再挑戦できます。達成報酬・宝箱は重複付与されません。</p>`:''}</div>`;
+ return `<div class="card journey-focus"><div class="journey-focus-current">★ 挑戦中 ★</div><div class="journey-stage-hero"><div><div class="journey-stage-name">${esc(`ワールド${s.world} ステージ${s.stage} ${s.name}`)}</div><div class="tiny">${esc(s.story)}</div></div><div class="journey-focus-badge">${s.badge}</div></div><div class="tiny">このステージは <b>発音・例文・AI会話</b> の3課題をすべて達成するとステージ達成です。課題ごとに目標達成率が異なります。</div><div class="journey-task-grid">${TASK_KEYS.map(key=>{const meta=TASK_META[key], score=Math.min(row[key],100), doneTask=questDone(i,key);return `<div class="journey-task ${doneTask?'done':''}"><div class="journey-task-head"><strong>${doneTask?'<span class="quest-medal" aria-label="達成">🏅</span> ':''}${meta.label}</strong><span class="journey-task-score">${score} / ${questMin(i,key)}%</span></div><p>${meta.reward}</p><button class="btn ${questButtonClass(key)} full" onclick="journeyPlay(${i},'${key}')">${done||doneTask?'再挑戦':meta.label+'に挑戦'}</button></div>`}).join('')}</div>${done?`<p class="tiny" style="margin-top:10px">達成済みでも何度でも再挑戦できます。達成報酬・宝箱は重複付与されません。</p>`:''}</div>`;
 }
 function journeyPanel(){
  const levelRemain=150-data.xp%150||150;
