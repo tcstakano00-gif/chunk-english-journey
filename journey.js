@@ -313,6 +313,14 @@ function injectStyles(){
  .journey-world-fold .journey-stage:not(.is-current) .journey-status.status-achieved{background:#b8eed4!important;color:#064b31!important}
  .journey-world-fold .journey-stage:not(.is-current) .journey-status.status-active{background:#d9e1e8!important;color:#566b80!important}
  .journey-world-fold .journey-stage:not(.is-current)>summary::after{background:#e1e6ed!important;color:#4d6275!important}
+ /* v4.0.59: readable horizontal achievement indicators across every stage */
+ .journey-world-fold .journey-miniquests{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px!important;margin-top:10px!important}
+ .journey-world-fold .journey-miniquest{display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:center!important;min-width:0!important;padding:9px 3px!important;font-size:15px!important;font-weight:900!important;text-align:center!important;line-height:1.25!important}
+ .journey-world-fold .journey-miniquest small{display:block!important;font-size:15px!important;line-height:1.25!important;margin-top:5px!important;font-weight:950!important;white-space:nowrap!important}
+ .journey-world-fold .journey-stage-heading .journey-status{font-size:15px!important;line-height:1.3!important;padding:6px 8px!important;max-width:none!important;white-space:nowrap!important}
+ .journey-world-fold .journey-stage.is-current .journey-status{font-size:15px!important}
+ .journey-focus .journey-task-score{font-size:15px!important;line-height:1.3!important;padding:5px 6px!important}
+ @media(max-width:380px){.journey-world-fold .journey-miniquest{font-size:13px!important}.journey-world-fold .journey-miniquest small{font-size:13px!important}.journey-world-fold .journey-stage-heading .journey-status{font-size:14px!important;padding:5px 6px!important}}
  @media(prefers-reduced-motion:reduce){.journey-reward,.journey-reward-medal{animation:none!important}}
 `;
  document.head.appendChild(style);
