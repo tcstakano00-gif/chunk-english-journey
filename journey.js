@@ -321,6 +321,13 @@ function injectStyles(){
  .journey-world-fold .journey-stage.is-current .journey-status{font-size:15px!important}
  .journey-focus .journey-task-score{font-size:15px!important;line-height:1.3!important;padding:5px 6px!important}
  @media(max-width:380px){.journey-world-fold .journey-miniquest{font-size:13px!important}.journey-world-fold .journey-miniquest small{font-size:13px!important}.journey-world-fold .journey-stage-heading .journey-status{font-size:14px!important;padding:5px 6px!important}}
+ /* v4.0.60: current-challenge score display: fit each card without overflowing */
+ .journey-focus .journey-task-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+ .journey-focus .journey-task{min-width:0!important;overflow:hidden!important;box-sizing:border-box!important}
+ .journey-focus .journey-task-head{width:100%!important;min-width:0!important}
+ .journey-focus .journey-task-score{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:0!important;width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box!important;padding:4px 1px!important;white-space:nowrap!important;overflow:hidden!important;line-height:1.2!important;letter-spacing:0!important}
+ .journey-focus .journey-score-current{display:block;font-size:clamp(16px,4.4vw,20px)!important;font-weight:950!important;font-variant-numeric:tabular-nums}
+ .journey-focus .journey-score-goal{display:block;margin-top:2px;font-size:clamp(10px,2.9vw,12px)!important;font-weight:850!important}
  @media(prefers-reduced-motion:reduce){.journey-reward,.journey-reward-medal{animation:none!important}}
 `;
  document.head.appendChild(style);
@@ -367,7 +374,7 @@ function focusPanel(){
  const i=Math.min(data.active,STAGES.length-1), s=STAGES[i], done=data.completed.includes(i), locked=!stageUnlocked(i);
  if(locked)return '';
  const row=progressFor(i);
- return `<div class="card journey-focus"><div class="journey-focus-current">★ 挑戦中 ★</div><div class="journey-stage-hero"><div><div class="journey-stage-name">${esc(`ワールド${s.world} ステージ${s.stage} ${s.name}`)}</div><div class="tiny">${esc(s.story)}</div></div><div class="journey-focus-badge">${s.badge}</div></div><div class="tiny">このステージは <b>発音・例文・AI会話</b> の3課題をすべて達成するとステージ達成です。課題ごとに目標達成率が異なります。</div><div class="journey-task-grid">${TASK_KEYS.map(key=>{const meta=TASK_META[key], score=Math.min(row[key],100), doneTask=questDone(i,key);return `<div class="journey-task ${doneTask?'done':''}"><div class="journey-task-head"><strong>${doneTask?'<span class="quest-medal" aria-label="達成">🏅</span> ':''}${meta.label}</strong><span class="journey-task-score">${score} / ${questMin(i,key)}%</span></div><p>${meta.reward}</p><button class="btn ${questButtonClass(key)} full" onclick="journeyPlay(${i},'${key}')">${done||doneTask?'再挑戦':meta.label+'に挑戦'}</button></div>`}).join('')}</div>${done?`<p class="tiny" style="margin-top:10px">達成済みでも何度でも再挑戦できます。達成報酬・宝箱は重複付与されません。</p>`:''}</div>`;
+ return `<div class="card journey-focus"><div class="journey-focus-current">★ 挑戦中 ★</div><div class="journey-stage-hero"><div><div class="journey-stage-name">${esc(`ワールド${s.world} ステージ${s.stage} ${s.name}`)}</div><div class="tiny">${esc(s.story)}</div></div><div class="journey-focus-badge">${s.badge}</div></div><div class="tiny">このステージは <b>発音・例文・AI会話</b> の3課題をすべて達成するとステージ達成です。課題ごとに目標達成率が異なります。</div><div class="journey-task-grid">${TASK_KEYS.map(key=>{const meta=TASK_META[key], score=Math.min(row[key],100), doneTask=questDone(i,key);return `<div class="journey-task ${doneTask?'done':''}"><div class="journey-task-head"><strong>${doneTask?'<span class="quest-medal" aria-label="達成">🏅</span> ':''}${meta.label}</strong><span class="journey-task-score" aria-label="達成率${score}%、目標${questMin(i,key)}%"><span class="journey-score-current">${score}%</span><span class="journey-score-goal">目標 ${questMin(i,key)}%</span></span></div><p>${meta.reward}</p><button class="btn ${questButtonClass(key)} full" onclick="journeyPlay(${i},'${key}')">${done||doneTask?'再挑戦':meta.label+'に挑戦'}</button></div>`}).join('')}</div>${done?`<p class="tiny" style="margin-top:10px">達成済みでも何度でも再挑戦できます。達成報酬・宝箱は重複付与されません。</p>`:''}</div>`;
 }
 function journeyPanel(){
  const levelRemain=150-data.xp%150||150;
